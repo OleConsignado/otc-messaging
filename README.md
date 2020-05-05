@@ -29,7 +29,7 @@ services.AddRabbitMQ(new RabbitMQConfiguration
 
 ```
 
-`AddRabbitMQ` will register `RabbitMQMessaging` implementation (from `Otc.Messaging.RabbitMQ` assembly) for `IMessaging` interface (from `Otc.Messaging.Abstractions` assembly) as scoped lifetime.
+`AddRabbitMQ` will register `RabbitMQMessaging` implementation (from `Otc.Messaging.RabbitMQ` assembly) for `IMessaging` interface (from `Otc.Messaging.Abstractions` assembly) as singleton lifetime.
 
 ### Basic Usage
 
@@ -41,8 +41,11 @@ IMessaging bus = ... // get messaging bus from service provider (using dependenc
 string message = "Hello world!";
 byte[] messageBytes = Encoding.UTF8.GetBytes(message);
 
+// Create a publisher
+IPublisher publisher = bus.CreatePublisher();
+
 // Publish "Hello world!" string to a topic named "TopicName"
-bus.Publish("TopicName", messageBytes);
+publisher.Publish("TopicName", messageBytes);
 ```
 #### Subscribe to queue(s)
 
