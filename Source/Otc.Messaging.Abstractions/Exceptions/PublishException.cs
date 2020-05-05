@@ -21,9 +21,6 @@ namespace Otc.Messaging.Abstractions.Exceptions
             : this($"Publish operation to topic '{topic}' and queue '{queue}' failed, " +
                   $"see innerException.", topic, queue, messageBytes, innerException)
         {
-            Topic = topic;
-            Queue = queue;
-            MessageBytes = messageBytes;
         }
 
         public PublishException(string message, string topic, string queue,
