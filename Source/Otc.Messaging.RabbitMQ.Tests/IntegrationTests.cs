@@ -45,7 +45,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
             var bus = serviceProvider.GetService<IMessaging>();
 
             bus.EnsureTopology("IntegrationTests");
-         }
+        }
 
         class MessageHandler
         {
@@ -180,7 +180,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
             var msg = $"Message # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
 
             using var bus = serviceProvider.GetService<IMessaging>();
-            
+
             bus.CreatePublisher().Publish("test-02", Encoding.UTF8.GetBytes(msg));
 
             var handler = new MessageHandler { OutputHelper = OutputHelper };
@@ -223,7 +223,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
         {
             using var bus = serviceProvider.GetService<IMessaging>();
 
-            string[] queues = { "test-05", "test-06", "test-07"};
+            string[] queues = { "test-05", "test-06", "test-07" };
 
             var msg = $"Message # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
 

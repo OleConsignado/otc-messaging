@@ -29,6 +29,7 @@ namespace Otc.Messaging.RabbitMQ
         private readonly RabbitMQChannelEventsHandler channelEvents;
         private readonly Action<IMessage> handler;
         private readonly RabbitMQConfiguration configuration;
+        private readonly RabbitMQMessaging messaging;
         private readonly string[] queues;
         private readonly ILogger logger;
         private readonly IDictionary<string, string> consumersToQueues;
@@ -38,6 +39,7 @@ namespace Otc.Messaging.RabbitMQ
             RabbitMQChannelEventsHandler channelEvents,
             Action<IMessage> handler,
             RabbitMQConfiguration configuration,
+            RabbitMQMessaging messaging,
             ILoggerFactory loggerFactory,
             params string[] queues)
         {
@@ -52,6 +54,9 @@ namespace Otc.Messaging.RabbitMQ
 
             this.configuration = configuration ??
                 throw new ArgumentNullException(nameof(configuration));
+
+            this.messaging = messaging ??
+                throw new ArgumentNullException(nameof(messaging));
 
             this.queues = queues ??
                 throw new ArgumentNullException(nameof(queues));
@@ -89,7 +94,7 @@ namespace Otc.Messaging.RabbitMQ
             foreach (var queue in queues)
             {
                 var tag = "";
-                lock(consumersToQueues)
+                lock (consumersToQueues)
                 {
                     tag = channel.BasicConsume(queue: queue, autoAck: false, consumer: consumer);
                     consumersToQueues.Add(tag, queue);
@@ -174,20 +179,15 @@ namespace Otc.Messaging.RabbitMQ
                 var requeue = false;
 
                 if (configuration.MessageHandlerErrorBehavior ==
-                    MessageHandlerErrorBehavior.RejectOnRedelivery)
+                    MessageHandlerErrorBehavior.RejectOnRedelivery && !ea.Redelivered)
                 {
-                    if (ea.Redelivered == false)
-                    {
-                        requeue = true;
-                    }
+                    requeue = true;
                 }
 
                 channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: requeue);
 
-                logger.LogInformation($"{nameof(MessageReceived)}: Message " +
-                    "{MessageId} rejected with requeue set to " + $"{requeue}", message.Id);
-
-                return;
+                logger.LogWarning($"{nameof(MessageReceived)}: Message " +
+                    "{MessageId} rejected with requeue set to {Requeue}", message.Id, requeue);
             }
         }
 
@@ -195,7 +195,18 @@ namespace Otc.Messaging.RabbitMQ
 
         public void Dispose()
         {
-            if (!disposed)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            if (disposing)
             {
                 logger.LogDebug($"{nameof(RabbitMQSubscription)}: Disposing ...");
 
@@ -206,10 +217,12 @@ namespace Otc.Messaging.RabbitMQ
 
                 channel.Dispose();
 
-                logger.LogDebug($"{nameof(RabbitMQSubscription)}: Disposed.");
+                messaging.RemoveSubscription(this);
 
-                disposed = true;
+                logger.LogDebug($"{nameof(RabbitMQSubscription)}: Disposed.");
             }
+
+            disposed = true;
         }
     }
 }

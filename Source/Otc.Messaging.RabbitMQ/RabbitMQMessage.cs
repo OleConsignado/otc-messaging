@@ -1,5 +1,6 @@
 ﻿using Otc.Messaging.Abstractions;
 using RabbitMQ.Client.Events;
+using System;
 
 namespace Otc.Messaging.RabbitMQ
 {
@@ -18,7 +19,8 @@ namespace Otc.Messaging.RabbitMQ
         public RabbitMQMessage(BasicDeliverEventArgs ea, string queue)
         {
             Id = ea.BasicProperties.MessageId;
-            Timestamp = ea.BasicProperties.Timestamp.UnixTime;
+            Timestamp = DateTimeOffset
+                .FromUnixTimeMilliseconds(ea.BasicProperties.Timestamp.UnixTime);
             Topic = ea.Exchange;
             Queue = queue;
             Redelivered = ea.Redelivered;
@@ -29,7 +31,7 @@ namespace Otc.Messaging.RabbitMQ
         public string Id { get; }
 
         /// <inheritdoc/>
-        public long Timestamp { get; }
+        public DateTimeOffset Timestamp { get; }
 
         /// <inheritdoc/>
         public string Topic { get; }

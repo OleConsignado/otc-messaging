@@ -1,4 +1,6 @@
-﻿namespace Otc.Messaging.Abstractions
+﻿using System;
+
+namespace Otc.Messaging.Abstractions
 {
     /// <summary>
     /// Represents a message received by a consumer.
@@ -13,7 +15,7 @@
         /// <summary>
         /// Application generated Unix timestamp in milliseconds.
         /// </summary>
-        long Timestamp { get; }
+        DateTimeOffset Timestamp { get; }
 
         /// <summary>
         /// Topic this message was published to.

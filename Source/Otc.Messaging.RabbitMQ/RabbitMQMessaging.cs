@@ -4,6 +4,7 @@ using Otc.Messaging.RabbitMQ.Configurations;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Otc.Messaging.RabbitMQ
 {
@@ -81,7 +82,7 @@ namespace Otc.Messaging.RabbitMQ
             var (channel, channelEvents) = CreateChannel();
 
             var publisher = new RabbitMQPublisher(channel, channelEvents,
-                configuration.PublishConfirmationTimeoutMilliseconds, loggerFactory);
+                configuration.PublishConfirmationTimeoutMilliseconds, this, loggerFactory);
 
             publishers.Add(publisher);
 
@@ -101,7 +102,7 @@ namespace Otc.Messaging.RabbitMQ
             var (channel, channelEvents) = CreateChannel();
 
             var subscription = new RabbitMQSubscription(channel, channelEvents, handler,
-                configuration, loggerFactory, queues);
+                configuration, this, loggerFactory, queues);
 
             subscriptions.Add(subscription);
 
@@ -110,23 +111,27 @@ namespace Otc.Messaging.RabbitMQ
             return subscription;
         }
 
+        /// <summary>
+        /// Applies a given topology to the broker.
+        /// </summary>
+        /// <param name="name">Topology name loaded in <see cref="Topologies"/>.</param>
         /// <remarks>
-        /// Applies a topology that was previously loaded in the configuration
-        /// <see cref="RabbitMQConfiguration"/>.
         /// All Exchanges and it's queues and bindings will be declared via 
         /// ExchangeDeclare, QueueDeclare e QueueBind.
         /// It is not necessary to apply theses configurations all the time if
         /// your topology defines exchanges and queues as durables.
         /// </remarks>
-        /// <inheritdoc/>
+        /// <exception cref="EnsureTopologyException">
+        /// Thrown if any error of configuration, connection or permissions occurs while
+        /// applying given topology.
+        /// </exception>
         public void EnsureTopology(string name)
         {
-            var channel = Connection.CreateModel();
-
-            configuration.EnsureTopology(name, channel);
-
-            channel.Close();
-            channel.Dispose();
+            using (var channel = Connection.CreateModel())
+            {
+                configuration.EnsureTopology(name, channel);
+                channel.Close();
+            }
 
             logger.LogInformation($"{nameof(EnsureTopology)}: Topology " +
                 "{Topology} applied successfully!", name);
@@ -149,6 +154,16 @@ namespace Otc.Messaging.RabbitMQ
             return (channel, new RabbitMQChannelEventsHandler(channel, loggerFactory));
         }
 
+        internal void RemovePublisher(RabbitMQPublisher item)
+        {
+            publishers.Remove(item);
+        }
+
+        internal void RemoveSubscription(RabbitMQSubscription item)
+        {
+            subscriptions.Remove(item);
+        }
+
         private bool disposed = false;
 
         /// <summary>
@@ -157,21 +172,30 @@ namespace Otc.Messaging.RabbitMQ
         /// </summary>
         public void Dispose()
         {
-            if (!disposed)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            if (disposing)
             {
                 logger.LogDebug($"{nameof(RabbitMQMessaging)}: Disposing ...");
 
-                foreach (var publisher in publishers)
+                foreach (var publisher in publishers.ToList())
                 {
-                    publisher.Dispose();
+                    publisher?.Dispose();
                 }
-                publishers.Clear();
 
-                foreach (var subscription in subscriptions)
+                foreach (var subscription in subscriptions.ToList())
                 {
-                    subscription.Dispose();
+                    subscription?.Dispose();
                 }
-                subscriptions.Clear();
 
                 if (connection != null)
                 {
@@ -183,10 +207,10 @@ namespace Otc.Messaging.RabbitMQ
                     connection.Dispose();
                 }
 
-                disposed = true;
-
                 logger.LogDebug($"{nameof(RabbitMQMessaging)}: Disposed.");
             }
+
+            disposed = true;
         }
     }
 }
