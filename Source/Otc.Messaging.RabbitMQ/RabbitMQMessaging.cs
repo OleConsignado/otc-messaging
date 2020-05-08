@@ -81,7 +81,7 @@ namespace Otc.Messaging.RabbitMQ
             var (channel, channelEvents) = CreateChannel();
 
             var publisher = new RabbitMQPublisher(channel, channelEvents,
-                configuration.PublishConfirmationTimeout, loggerFactory);
+                configuration.PublishConfirmationTimeoutMilliseconds, loggerFactory);
 
             publishers.Add(publisher);
 

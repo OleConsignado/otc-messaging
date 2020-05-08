@@ -1,4 +1,6 @@
-﻿using RabbitMQ.Client;
+﻿using Otc.Messaging.Abstractions.Exceptions;
+using RabbitMQ.Client;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,8 +20,7 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         /// <summary>
         /// Port number to connect to.
         /// </summary>
-        [Required]
-        public int Port { set; get; }
+        public int Port { set; get; } = AmqpTcpEndpoint.UseDefaultPort;
 
         /// <summary>
         /// User for connection.
@@ -37,25 +38,22 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         /// Timeout in milliseconds. Throws an exception if confirmation wait time is exceded or
         /// if broker sends back an nack. Default is 15 seconds.
         /// </summary>
-        [Required]
-        public uint PublishConfirmationTimeout { get; set; } = 15000;
+        public uint PublishConfirmationTimeoutMilliseconds { get; set; } = 15000;
 
         /// <summary>
         /// Subscription can consume one or more queues, this sets the number of messages
         /// prefetched per queue. Default is 1.
         /// </summary>
-        [Required]
-        public byte PerQueuePrefetchCount { get; set; } = 1;
+        public ushort PerQueuePrefetchCount { get; set; } = 1;
 
         /// <summary>
         /// Define action when a MessageHandler throws an exception.
         /// </summary>
         /// <remarks>
-        /// I's highly recommended that your queue have a good dlx configuration defined.
+        /// It's highly recommended that your queue have a good dlx configuration defined.
         /// </remarks>
-        [Required]
-        public OnMessageHandlerError OnMessageHandlerError { get; set; } =
-            OnMessageHandlerError.RejectOnRedelivery;
+        public MessageHandlerErrorBehavior MessageHandlerErrorBehavior { get; set; } =
+            MessageHandlerErrorBehavior.RejectOnRedelivery;
 
         /// <summary>
         /// List of Topologies used by this client.
@@ -69,38 +67,69 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         /// <summary>
         /// Applies a given topology to the broker.
         /// </summary>
-        /// <param name="name">One topology name loaded in <see cref="Topologies"/>.</param>
+        /// <param name="name">Topology name loaded in <see cref="Topologies"/>.</param>
         /// <param name="channel">The channel opened by the <see cref="RabbitMQMessaging"/>
         /// for this purpose.</param>
+        /// <remarks>
+        /// All Exchanges and it's queues and bindings will be declared via 
+        /// ExchangeDeclare, QueueDeclare e QueueBind.
+        /// It is not necessary to apply theses configurations all the time if
+        /// your topology defines exchanges and queues as durables.
+        /// </remarks>
+        /// <exception cref="EnsureTopologyException">
+        /// Thrown if any error of configuration, connection or permissions occurs while
+        /// applying given topology.
+        /// </exception>
         public void EnsureTopology(string name, IModel channel)
         {
-            var topology = Topologies[name];
-
-            foreach (var e in topology.Exchanges)
+            try
             {
-                channel.ExchangeDeclare(exchange: e.Name, type: e.Type, durable: e.Durable,
-                    autoDelete: e.AutoDelete, arguments: e.Arguments);
+                var topology = Topologies[name];
 
-                foreach (var q in e.Queues)
+                foreach (var e in topology.Exchanges)
                 {
-                    q.Arguments = this.QueueArgumentsConverter(q.Arguments);
+                    channel.ExchangeDeclare(exchange: e.Name, type: e.Type, durable: e.Durable,
+                        autoDelete: e.AutoDelete, arguments: e.Arguments);
 
-                    channel.QueueDeclare(queue: q.Name, durable: q.Durable, exclusive: q.Exclusive,
-                        autoDelete: q.AutoDelete, arguments: q.Arguments);
+                    foreach (var q in e.Queues)
+                    {
+                        q.Arguments = ArgumentsConverter(q.Arguments);
 
-                    channel.QueueBind(queue: q.Name, exchange: e.Name, routingKey: q.RoutingKey);
+                        channel.QueueDeclare(queue: q.Name, durable: q.Durable, exclusive: q.Exclusive,
+                            autoDelete: q.AutoDelete, arguments: q.Arguments);
+
+                        channel.QueueBind(queue: q.Name, exchange: e.Name, routingKey: q.RoutingKey);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                throw new EnsureTopologyException(name, ex);
+            }
         }
-    }
 
-    /// <summary>
-    /// Sets the <see cref="RabbitMQSubscription"/> behavior when message handling throws 
-    /// an exception.
-    /// </summary>
-    public enum OnMessageHandlerError
-    {
-        RejectOnFistDelivery = 0,
-        RejectOnRedelivery = 1,
+        private IDictionary<string, object> ArgumentsConverter(
+            IDictionary<string, object> arguments)
+        {
+            if (arguments == null)
+            {
+                return arguments;
+            }
+
+            try
+            {
+                if (arguments.ContainsKey("x-message-ttl"))
+                {
+                    arguments["x-message-ttl"] = Convert.ToInt32(arguments["x-message-ttl"]);
+                }
+
+                return arguments;
+            }
+            catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+            {
+                throw new ArgumentException("Could not convert to appropriate type, see " +
+                    "innerException.", nameof(arguments), ex);
+            }
+        }
     }
 }

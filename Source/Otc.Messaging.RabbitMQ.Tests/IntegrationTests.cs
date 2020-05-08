@@ -82,7 +82,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
         {
             using var bus = serviceProvider.GetService<IMessaging>();
 
-            Assert.Throws<KeyNotFoundException>(() =>
+            Assert.Throws<EnsureTopologyException>(() =>
             {
                 bus.EnsureTopology("Undefined");
             });
@@ -154,7 +154,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
 
             bus.Dispose();
 
-            var ex = Assert.Throws<ObjectDisposedException>(() =>
+            Assert.Throws<ObjectDisposedException>(() =>
             {
                 sub.Start();
             });
@@ -168,7 +168,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
             var handler = new MessageHandler { OutputHelper = OutputHelper };
             var subscription = bus.Subscribe(message => { handler.Handle(message); }, "do-not-exist");
 
-            var ex = Assert.Throws<OperationInterruptedException>(() =>
+            Assert.Throws<OperationInterruptedException>(() =>
             {
                 subscription.Start();
             });
@@ -309,7 +309,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 Port = 5672,
                 User = "guest",
                 Password = "guest",
-                OnMessageHandlerError = OnMessageHandlerError.RejectOnFistDelivery,
+                MessageHandlerErrorBehavior = MessageHandlerErrorBehavior.RejectOnFistDelivery,
                 PerQueuePrefetchCount = 10
             }, serviceProvider.GetService<ILoggerFactory>());
 
@@ -337,7 +337,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 Port = 5672,
                 User = "guest",
                 Password = "guest",
-                OnMessageHandlerError = OnMessageHandlerError.RejectOnRedelivery,
+                MessageHandlerErrorBehavior = MessageHandlerErrorBehavior.RejectOnRedelivery,
                 PerQueuePrefetchCount = 10
             }, serviceProvider.GetService<ILoggerFactory>());
 
