@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Otc.Messaging.Abstractions.Exceptions
 {
     /// <summary>
     /// Base exception for publish operations
     /// </summary>
+    [Serializable]
     public class PublishException : MessagingException
     {
         public string Topic { get; }
@@ -29,7 +31,17 @@ namespace Otc.Messaging.Abstractions.Exceptions
         {
             Topic = topic;
             Queue = queue;
-            MessageBytes = messageBytes;
+
+            // limit message's length for logging purposes
+            var length = Math.Min(messageBytes.Length, 4096);
+            MessageBytes = new byte[length];
+            Array.Copy(messageBytes, MessageBytes, length);
+        }
+
+        protected PublishException(SerializationInfo info,
+            StreamingContext context)
+            : base(info, context)
+        {
         }
     }
 }

@@ -173,8 +173,8 @@ namespace Otc.Messaging.RabbitMQ
 
                 var requeue = false;
 
-                if (configuration.OnMessageHandlerError ==
-                    OnMessageHandlerError.RejectOnRedelivery)
+                if (configuration.MessageHandlerErrorBehavior ==
+                    MessageHandlerErrorBehavior.RejectOnRedelivery)
                 {
                     if (ea.Redelivered == false)
                     {
