@@ -20,6 +20,11 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         /// <summary>
         /// Port number to connect to.
         /// </summary>
+        /// <remarks>
+        /// RabbitMQ.Client uses a conventional value of -1 to indicate that this connection 
+        /// will use protocol default ports, which are 5672 for AMQP and 5671 for AMQPS (TLS/SSL)
+        /// Set a different number if your broker customises this values
+        /// </remarks>
         public int Port { set; get; } = AmqpTcpEndpoint.UseDefaultPort;
 
         /// <summary>

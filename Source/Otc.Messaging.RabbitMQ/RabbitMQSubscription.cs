@@ -102,10 +102,6 @@ namespace Otc.Messaging.RabbitMQ
 
                 logger.LogInformation($"{nameof(Start)}: Consumer {tag} of queue " +
                     "{Queue} started", queue);
-
-                logger.LogDebug($"{nameof(Start)}: Consumer {tag} of queue " +
-                    "{Queue} declared on thread " + $"{Thread.CurrentThread.ManagedThreadId}",
-                    queue);
             }
         }
 

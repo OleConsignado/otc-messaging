@@ -47,15 +47,6 @@ namespace Otc.Messaging.RabbitMQ
         }
 
         /// <inheritdoc/>
-        /// <exception cref="PublishException">
-        /// Thrown if broker do not send confirmation of message received, which may be due
-        /// to timeout, topic does not exist or communication problems. InnerException will 
-        /// provide details.
-        /// </exception>
-        /// <exception cref="MissingRouteException">
-        /// Thrown if broker receives and ackowledges the message but do not find a route 
-        /// to a queue for that message.
-        /// </exception>
         public void Publish(string topic, byte[] message, string queue = null
             , string messageId = null)
         {
