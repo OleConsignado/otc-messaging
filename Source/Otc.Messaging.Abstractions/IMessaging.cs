@@ -27,6 +27,10 @@ namespace Otc.Messaging.Abstractions
         /// Ensures that a given topology is configure by the broker.
         /// </summary>
         /// <param name="name">The topology name to look for.</param>
+        /// <exception cref="EnsureTopologyException">
+        /// Thrown if any error of configuration, connection or permissions occurs while
+        /// applying given topology.
+        /// </exception>
         void EnsureTopology(string name);
     }
 }

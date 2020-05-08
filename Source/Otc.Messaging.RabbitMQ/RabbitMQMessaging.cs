@@ -121,10 +121,7 @@ namespace Otc.Messaging.RabbitMQ
         /// It is not necessary to apply theses configurations all the time if
         /// your topology defines exchanges and queues as durables.
         /// </remarks>
-        /// <exception cref="EnsureTopologyException">
-        /// Thrown if any error of configuration, connection or permissions occurs while
-        /// applying given topology.
-        /// </exception>
+        /// <inheritdoc cref="IMessaging.EnsureTopology(string)"/>
         public void EnsureTopology(string name)
         {
             using (var channel = Connection.CreateModel())

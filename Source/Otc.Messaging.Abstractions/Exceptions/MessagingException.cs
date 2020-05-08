@@ -6,7 +6,6 @@ namespace Otc.Messaging.Abstractions.Exceptions
     /// <summary>
     /// Base exception for Messaging
     /// </summary>
-    [Serializable]
     public abstract class MessagingException : Exception
     {
         protected MessagingException(string message)
