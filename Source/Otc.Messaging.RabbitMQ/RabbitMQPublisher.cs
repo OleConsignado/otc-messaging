@@ -2,7 +2,6 @@
 using Otc.Messaging.Abstractions;
 using Otc.Messaging.Abstractions.Exceptions;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Exceptions;
 using System;
 
 namespace Otc.Messaging.RabbitMQ
@@ -21,12 +20,14 @@ namespace Otc.Messaging.RabbitMQ
         private readonly IModel channel;
         private readonly RabbitMQChannelEventsHandler channelEvents;
         private readonly TimeSpan timeout;
+        private readonly RabbitMQMessaging messaging;
         private readonly ILogger logger;
 
         public RabbitMQPublisher(
             IModel channel,
             RabbitMQChannelEventsHandler channelEvents,
             uint timeout,
+            RabbitMQMessaging messaging,
             ILoggerFactory loggerFactory)
         {
             this.channel = channel ?? throw new ArgumentNullException(nameof(channel));
@@ -35,6 +36,9 @@ namespace Otc.Messaging.RabbitMQ
                 throw new ArgumentNullException(nameof(channelEvents));
 
             this.timeout = TimeSpan.FromMilliseconds(timeout);
+
+            this.messaging = messaging ??
+                throw new ArgumentNullException(nameof(messaging));
 
             logger = loggerFactory?.CreateLogger<RabbitMQPublisher>() ??
                 throw new ArgumentNullException(nameof(loggerFactory));
@@ -84,23 +88,18 @@ namespace Otc.Messaging.RabbitMQ
 
             try
             {
+                // this operation is synchronous, so when this call returns, the 
+                // corresponding channel events already happened and states were 
+                // updated, like in the missing route checked bellow
                 channel.WaitForConfirmsOrDie(timeout);
             }
-            catch (OperationInterruptedException ex) 
+            catch (Exception ex)
             {
-                logger.LogError(ex, $"{nameof(Publish)}: Message " +
-                    "{MessageId} to topic {Topic} and queue '{Queue}' failed!",
-                    properties.MessageId, topic, queue);
-
                 throw new PublishException(topic, queue, message, ex);
             }
 
             if (channelEvents.IsRouteMissing)
             {
-                logger.LogError($"{nameof(Publish)}: Message " +
-                    "{MessageId} to topic {Topic} and queue '{Queue}' failed. Route is missing!",
-                    properties.MessageId, topic, queue);
-
                 throw new MissingRouteException(topic, queue, message);
             }
 
@@ -124,7 +123,18 @@ namespace Otc.Messaging.RabbitMQ
 
         public void Dispose()
         {
-            if (!disposed)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            if (disposing)
             {
                 logger.LogDebug($"{nameof(RabbitMQPublisher)}: Disposing ...");
 
@@ -135,19 +145,21 @@ namespace Otc.Messaging.RabbitMQ
 
                 channel.Dispose();
 
+                messaging.RemovePublisher(this);
+
                 logger.LogDebug($"{nameof(RabbitMQPublisher)}: Disposed.");
-
-                disposed = true;
             }
-        }
-    }
 
-    /// <summary>
-    /// Provides named Delivery Modes for message publishing
-    /// </summary>
-    public static class DeliveryMode
-    {
-        public static byte NonPersistent = 1;
-        public static byte Persistent = 2;
+            disposed = true;
+        }
+
+        /// <summary>
+        /// Provides named Delivery Modes for message publishing
+        /// </summary>
+        public static class DeliveryMode
+        {
+            public const byte NonPersistent = 1;
+            public const byte Persistent = 2;
+        }
     }
 }
