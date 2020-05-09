@@ -1,7 +1,7 @@
-﻿using RabbitMQ.Client;
+﻿using Otc.ComponentModel.DataAnnotations;
+using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace Otc.Messaging.RabbitMQ.Configurations
 {

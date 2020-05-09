@@ -1,8 +1,9 @@
-﻿using Otc.Messaging.Abstractions.Exceptions;
+﻿using Otc.ComponentModel.DataAnnotations;
+using Otc.Messaging.Abstractions.Exceptions;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Otc.Messaging.RabbitMQ.Configurations
 {
@@ -12,11 +13,12 @@ namespace Otc.Messaging.RabbitMQ.Configurations
     public class RabbitMQConfiguration
     {
         /// <summary>
-        /// Host name or ip address to connect to.
+        /// List of hosts names or ip addresses to connect to.
+        /// Enter multiple options if you have a cluster configured.
         /// </summary>
         [Required]
-        public string Host { set; get; }
-
+        public IList<string> Hosts { set; get; }
+        
         /// <summary>
         /// Port number to connect to.
         /// </summary>
@@ -110,6 +112,14 @@ namespace Otc.Messaging.RabbitMQ.Configurations
             catch (Exception ex)
             {
                 throw new EnsureTopologyException(name, ex);
+            }
+        }
+
+        internal string Hostnames
+        {
+            get
+            {
+                return string.Join(", ", Hosts.ToArray());
             }
         }
 

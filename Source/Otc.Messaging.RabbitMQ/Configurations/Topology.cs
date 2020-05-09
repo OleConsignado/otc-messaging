@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using Otc.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace Otc.Messaging.RabbitMQ.Configurations
 {
     public class Topology
     {
         [Required]
-        public ICollection<Exchange> Exchanges { get; set; }
+        public IEnumerable<Exchange> Exchanges { get; set; }
     }
 }

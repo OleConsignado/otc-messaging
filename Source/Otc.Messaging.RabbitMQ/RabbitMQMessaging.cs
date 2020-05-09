@@ -9,12 +9,14 @@ using System.Linq;
 namespace Otc.Messaging.RabbitMQ
 {
     /// <summary>
-    /// Provides a factory for RabbitMQ <see cref="IPublisher"/> and <see cref="ISubscription"/>.
+    /// Provides a factory for RabbitMQ <see cref="RabbitMQPublisher"/> and
+    /// <see cref="RabbitMQSubscription"/>.
     /// </summary>
     /// <remarks>
     /// It holds a connection with the broker that is supposed to be long-lived, i.e., this object
     /// instance may usually be registered as a singleton in your application life-cycle, and
-    /// provide scoped instances of <see cref="IPublisher"/> and/or <see cref="ISubscription"/>.
+    /// provide scoped instances of <see cref="RabbitMQPublisher"/> and
+    /// <see cref="RabbitMQSubscription"/>.
     /// </remarks>
     public class RabbitMQMessaging : IMessaging
     {
@@ -36,7 +38,6 @@ namespace Otc.Messaging.RabbitMQ
 
                 var factory = new ConnectionFactory()
                 {
-                    HostName = configuration.Host,
                     Port = configuration.Port,
                     UserName = configuration.User,
                     Password = configuration.Password,
@@ -47,9 +48,13 @@ namespace Otc.Messaging.RabbitMQ
                 factory.NetworkRecoveryInterval = TimeSpan.FromSeconds(10);
 
                 logger.LogInformation($"{nameof(Connection)}: Connecting to " +
-                    $"{configuration.Host}:{configuration.Port} with user {configuration.User}");
+                    $"{configuration.Hostnames}:{configuration.Port} with user {configuration.User}");
 
-                connection = factory.CreateConnection();
+                connection = factory.CreateConnection(configuration.Hosts, nameof(RabbitMQMessaging));
+
+                logger.LogInformation($"{nameof(Connection)}: Connected to endpoint " +
+                    "{Endpoint}", connection.Endpoint.ToString());
+
                 return connection;
             }
         }
@@ -71,7 +76,10 @@ namespace Otc.Messaging.RabbitMQ
             subscriptions = new List<RabbitMQSubscription>();
         }
 
-        /// <inheritdoc/>>
+        /// <summary>
+        /// Creates a new instance of <see cref="RabbitMQPublisher"/>.
+        /// </summary>
+        /// <returns>Instance of <see cref="RabbitMQPublisher"/> ready to publish messages.</returns>
         public IPublisher CreatePublisher()
         {
             if (disposed)
@@ -91,6 +99,11 @@ namespace Otc.Messaging.RabbitMQ
             return publisher;
         }
 
+        /// <summary>
+        /// Creates a new instance of <see cref="RabbitMQSubscription"/>.
+        /// </summary>
+        /// <returns>Instance of <see cref="RabbitMQSubscription"/> ready to start
+        /// consuming messages.</returns>
         /// <inheritdoc/>
         public ISubscription Subscribe(Action<IMessage> handler, params string[] queues)
         {
