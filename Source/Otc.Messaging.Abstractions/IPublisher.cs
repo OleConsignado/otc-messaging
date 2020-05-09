@@ -10,8 +10,8 @@ namespace Otc.Messaging.Abstractions
         /// <summary>
         /// Publishes a message to a specified topic.
         /// </summary>
-        /// <param name="topic">The existing topic to publish to.</param>
         /// <param name="message">The message content to be published.</param>
+        /// <param name="topic">The existing topic to publish to.</param>
         /// <param name="queue">Routes this message to a specific queue.
         /// Normally omitted, since brokers are responsible for 
         /// routing messages to queues.</param>
@@ -26,6 +26,6 @@ namespace Otc.Messaging.Abstractions
         /// Thrown if broker receives and ackowledges the message but do not find a route 
         /// to a queue for that message.
         /// </exception>
-        void Publish(string topic, byte[] message, string queue = null, string messageId = null);
+        void Publish(byte[] message, string topic, string queue = null, string messageId = null);
     }
 }

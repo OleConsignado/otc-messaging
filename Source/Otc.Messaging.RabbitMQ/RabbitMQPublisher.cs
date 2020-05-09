@@ -7,7 +7,7 @@ using System;
 namespace Otc.Messaging.RabbitMQ
 {
     /// <summary>
-    /// Provides <see cref="IPublisher"/> for RabbitMQ.
+    /// Provides implementation of <see cref="IPublisher"/> for RabbitMQ.
     /// </summary>
     /// <remarks>
     /// This is not thread safe. When concurrent publishing is needed you should create as many
@@ -18,10 +18,12 @@ namespace Otc.Messaging.RabbitMQ
     public class RabbitMQPublisher : IPublisher
     {
         private readonly IModel channel;
-        private readonly RabbitMQChannelEventsHandler channelEvents;
         private readonly TimeSpan timeout;
         private readonly RabbitMQMessaging messaging;
         private readonly ILogger logger;
+
+        // holds per channel instance of events listener
+        public readonly RabbitMQChannelEventsHandler channelEvents;
 
         public RabbitMQPublisher(
             IModel channel,
@@ -47,10 +49,10 @@ namespace Otc.Messaging.RabbitMQ
         }
 
         /// <inheritdoc/>
-        public void Publish(string topic, byte[] message, string queue = null
+        public void Publish(byte[] message, string topic, string queue = null
             , string messageId = null)
         {
-            logger.LogInformation($"{nameof(Publish)}: Publish starting ...");
+            logger.LogDebug($"{nameof(Publish)}: Publish starting ...");
 
             if (disposed)
             {

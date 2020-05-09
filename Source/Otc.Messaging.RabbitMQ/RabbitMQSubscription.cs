@@ -5,34 +5,33 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace Otc.Messaging.RabbitMQ
 {
     /// <summary>
-    /// Provides <see cref="ISubscription"/> for RabbitMQ
+    /// Provides implementation of <see cref="ISubscription"/> for RabbitMQ
     /// </summary>
     /// <remarks>
-    /// This is not thread safe. When concurrent subscriptions are needed you should create as many 
-    /// subscriptions as the number of concurrent processings will exist. 
+    /// This is not thread safe. When concurrent subscriptions are needed you should create as many
+    /// subscriptions as the number of concurrent processings will exist.
     /// As each subscription has its own channel internally, you should consider the max number of
     /// channels allowed for your connection.
-    /// <para>
     /// The same applies for your handlers, if you register a single handler instance within
-    /// 2+ subscriptions and start concurrent consuming, be aware that you'll have to manage 
+    /// 2+ subscriptions and start concurrent consuming them, be aware that you'll have to manage
     /// concurrent access to your handler's resources and states.
-    /// </para>
     /// </remarks>
     public class RabbitMQSubscription : ISubscription
     {
         private readonly IModel channel;
-        private readonly RabbitMQChannelEventsHandler channelEvents;
         private readonly Action<IMessage> handler;
         private readonly RabbitMQConfiguration configuration;
         private readonly RabbitMQMessaging messaging;
         private readonly string[] queues;
         private readonly ILogger logger;
         private readonly IDictionary<string, string> consumersToQueues;
+
+        // holds per channel instance of events listener
+        public readonly RabbitMQChannelEventsHandler channelEvents;
 
         public RabbitMQSubscription(
             IModel channel,
@@ -72,6 +71,8 @@ namespace Otc.Messaging.RabbitMQ
         /// The consumer of messages runs on a thread of its own.
         /// All messages from all subscribed queues will be passed to the handler 
         /// that will run in this one thread too.
+        /// <para></para>
+        /// <inheritdoc cref="RabbitMQSubscription"/>
         /// </remarks>
         public void Start()
         {
@@ -88,26 +89,30 @@ namespace Otc.Messaging.RabbitMQ
             }
 
             var consumer = new EventingBasicConsumer(channel);
-
             consumer.Received += MessageReceived;
 
-            foreach (var queue in queues)
+            lock (consumersToQueues)
             {
-                var tag = "";
-                lock (consumersToQueues)
-                {
-                    tag = channel.BasicConsume(queue: queue, autoAck: false, consumer: consumer);
-                    consumersToQueues.Add(tag, queue);
-                }
 
-                logger.LogInformation($"{nameof(Start)}: Consumer {tag} of queue " +
-                    "{Queue} started", queue);
+                foreach (var queue in queues)
+                {
+                    var tag = channel.BasicConsume(queue: queue, autoAck: false, consumer: consumer);
+                    consumersToQueues.Add(tag, queue);
+
+                    logger.LogInformation($"{nameof(Start)}: Consumer {tag} of queue " +
+                        "{Queue} started", queue);
+                }
             }
         }
 
         /// <inheritdoc/>
         /// <remarks>
-        /// Stops queues consumption, but internal channel remains opened to allow for a new start.
+        /// Stop operation will wait until current message being handled finishes, if any.
+        /// Then it will ignore all other messages already sent 
+        /// (<see cref="RabbitMQConfiguration.PerQueuePrefetchCount"/>) which will be 
+        /// automatically requeued by the broker.
+        /// <para></para>
+        /// Internal channel remains opened to allow for a new start.
         /// </remarks>
         public void Stop()
         {
@@ -123,18 +128,28 @@ namespace Otc.Messaging.RabbitMQ
                 return;
             }
 
-            if (channel?.IsOpen ?? false)
+            // This lock prevents from stopping when there is a message being handled.
+            // When handling finishes and releases the lock, this process grabs it 
+            // preventing other messages from entering the handling chain.
+            // Without this lock management, the stop operation would execute and 
+            // return execution to the caller that would then dispose this subscription
+            // instance, causing failure on the ack/nack operations of still handling 
+            // message.
+            lock (consumersToQueues)
             {
-                foreach (var tag in consumersToQueues)
+                if (channel?.IsOpen ?? false)
                 {
-                    channel.BasicCancel(tag.Key);
+                    foreach (var tag in consumersToQueues)
+                    {
+                        channel.BasicCancel(tag.Key);
 
-                    logger.LogInformation($"{nameof(Stop)}: Consumer {tag.Key} " +
-                        $"of queue " + "{Queue} stopped", tag.Value);
+                        logger.LogInformation($"{nameof(Stop)}: Consumer {tag.Key} " +
+                            $"of queue " + "{Queue} stopped", tag.Value);
+                    }
                 }
-            }
 
-            consumersToQueues.Clear();
+                consumersToQueues.Clear();
+            }
         }
 
         private void MessageReceived(object sender, BasicDeliverEventArgs ea)
@@ -143,20 +158,29 @@ namespace Otc.Messaging.RabbitMQ
                 "{MessageId} received by " + $"{ea.ConsumerTag} " +
                 $"with DeliveryTag {ea.DeliveryTag}", ea.BasicProperties.MessageId);
 
-            var queue = "";
             lock (consumersToQueues)
             {
-                queue = consumersToQueues[ea.ConsumerTag];
+                if (consumersToQueues.TryGetValue(ea.ConsumerTag, out string queue))
+                {
+                    MessageHandling(queue, ea);
+                }
+                else
+                {
+                    logger.LogDebug($"{nameof(MessageReceived)}: Message " +
+                        "{MessageId} sent to " + $"{ea.ConsumerTag} " +
+                        $"with DeliveryTag {ea.DeliveryTag} was returned because " +
+                        $"subscription was stopped", ea.BasicProperties.MessageId);
+                }
             }
-            var message = new RabbitMQMessage(ea, queue);
+        }
 
-            logger.LogDebug($"{nameof(Start)}: Consumer {ea.ConsumerTag} of queue " +
-                "{Queue} running on thread " + $"{Thread.CurrentThread.ManagedThreadId}",
-                queue);
+        private void MessageHandling(string queue, BasicDeliverEventArgs ea)
+        {
+            var message = new RabbitMQMessage(ea, queue);
 
             try
             {
-                logger.LogInformation($"{nameof(MessageReceived)}: Message " +
+                logger.LogInformation($"{nameof(MessageHandling)}: Message " +
                     "{MessageId} received from queue {Queue} " +
                     $"with DeliveryTag {ea.DeliveryTag}", message.Id, queue);
 
@@ -164,12 +188,12 @@ namespace Otc.Messaging.RabbitMQ
 
                 channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
 
-                logger.LogInformation($"{nameof(MessageReceived)}: Message " +
+                logger.LogInformation($"{nameof(MessageHandling)}: Message " +
                     "{MessageId} handle succeeded!", message.Id);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"{nameof(MessageReceived)}: Message " +
+                logger.LogError(ex, $"{nameof(MessageHandling)}: Message " +
                     "{MessageId} handle failed!", message.Id);
 
                 var requeue = false;
