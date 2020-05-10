@@ -47,104 +47,108 @@ namespace Otc.Messaging.RabbitMQ.Tests
         [Fact]
         public void Test_Configuration_Topology()
         {
-            using var bus = serviceProvider.GetService<IMessaging>();
+            using (var bus = serviceProvider.GetService<IMessaging>()) 
+            { 
+                Assert.Throws<EnsureTopologyException>(() =>
+                {
+                    bus.EnsureTopology("Undefined");
+                });
 
-            Assert.Throws<EnsureTopologyException>(() =>
-            {
-                bus.EnsureTopology("Undefined");
-            });
-
-            try
-            {
-                bus.EnsureTopology("SimpleQueueWithRetry");
-            }
-            catch (Exception ex)
-            {
-                Assert.False(true, "Expected no exception, but got: " + ex.Message);
+                try
+                {
+                    bus.EnsureTopology("SimpleQueueWithRetry");
+                }
+                catch (Exception ex)
+                {
+                    Assert.False(true, "Expected no exception, but got: " + ex.Message);
+                }
             }
         }
 
         [Fact]
         public void Test_Missing_Topic_Route_Queue()
         {
-            using var bus = serviceProvider.GetService<IMessaging>();
-
-            var pub = bus.CreatePublisher();
-
-            Assert.Throws<MissingRouteException>(() =>
+            using (var bus = serviceProvider.GetService<IMessaging>())
             {
-                pub.Publish(Encoding.UTF8.GetBytes("Testing"), "test-missing-route");
-            });
+                var pub = bus.CreatePublisher();
 
-            Assert.Throws<PublishException>(() =>
-            {
-                pub.Publish(Encoding.UTF8.GetBytes("Testing"), "do-not-exist");
-            });
+                Assert.Throws<MissingRouteException>(() =>
+                {
+                    pub.Publish(Encoding.UTF8.GetBytes("Testing"), "test-missing-route");
+                });
 
-            var handler = new MessageHandler { OutputHelper = OutputHelper };
-            var subscription = bus.Subscribe(message => { handler.Handle(message); },
-                "do-not-exist");
+                Assert.Throws<PublishException>(() =>
+                {
+                    pub.Publish(Encoding.UTF8.GetBytes("Testing"), "do-not-exist");
+                });
 
-            Assert.Throws<OperationInterruptedException>(() =>
-            {
-                subscription.Start();
-            });
+                var handler = new MessageHandler { OutputHelper = OutputHelper };
+                var subscription = bus.Subscribe(message => { handler.Handle(message); },
+                    "do-not-exist");
+
+                Assert.Throws<OperationInterruptedException>(() =>
+                {
+                    subscription.Start();
+                });
+            }
         }
 
         [Fact]
         public void Test_Publish_And_Subscription()
         {
-            using var bus = serviceProvider.GetService<IMessaging>();
+            using (var bus = serviceProvider.GetService<IMessaging>())
+            {
+                var pub = bus.CreatePublisher();
 
-            var pub = bus.CreatePublisher();
+                var msgA = $"Message A # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
+                pub.Publish(Encoding.UTF8.GetBytes(msgA), "test-03");
 
-            var msgA = $"Message A # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
-            pub.Publish(Encoding.UTF8.GetBytes(msgA), "test-03");
+                var msgB = $"Message B # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
+                pub.Publish(Encoding.UTF8.GetBytes(msgB), "test-04");
 
-            var msgB = $"Message B # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
-            pub.Publish(Encoding.UTF8.GetBytes(msgB), "test-04");
+                var handler = new MessageHandler { OutputHelper = OutputHelper };
+                var sub = bus.Subscribe(message => { handler.Handle(message); },
+                    "test-03", "test-04");
 
-            var handler = new MessageHandler { OutputHelper = OutputHelper };
-            var sub = bus.Subscribe(message => { handler.Handle(message); },
-                "test-03", "test-04");
+                sub.Start();
+                Thread.Sleep(500);
+                sub.Stop();
 
-            sub.Start();
-            Thread.Sleep(500);
-            sub.Stop();
-
-            Assert.True(handler.Messages.Contains(msgA));
-            Assert.True(handler.Messages.Contains(msgB));
+                Assert.True(handler.Messages.Contains(msgA));
+                Assert.True(handler.Messages.Contains(msgB));
+            }
         }
 
         [Fact]
         public void Test_Publish_And_Subscription_Load()
         {
-            using var bus = serviceProvider.GetService<IMessaging>();
-
-            string[] queues = { "test-05", "test-06", "test-07" };
-
-            Stopwatch StopWatch = new Stopwatch();
-            StopWatch.Start();
-
-            FloodPublish(100, queues);
-
-            StopWatch.Stop();
-
-            var handler = new MessageHandler
+            using (var bus = serviceProvider.GetService<IMessaging>())
             {
-                OutputHelper = OutputHelper,
-                StopCount = 300
-            };
-            var sub = bus.Subscribe(message => { handler.Handle(message); }, queues);
+                string[] queues = { "test-05", "test-06", "test-07" };
 
-            sub.Start();
-            Thread.Sleep(1000);
-            sub.Stop();
+                Stopwatch StopWatch = new Stopwatch();
+                StopWatch.Start();
 
-            Assert.Equal(handler.StopCount, handler.Messages.Count);
+                FloodPublish(100, queues);
 
-            OutputHelper.WriteLine("Publish time: " + StopWatch.Elapsed.ToString());
-            OutputHelper.WriteLine("Consume time: " + handler.StopWatch.Elapsed.ToString());
+                StopWatch.Stop();
+
+                var handler = new MessageHandler
+                {
+                    OutputHelper = OutputHelper,
+                    StopCount = 300
+                };
+                var sub = bus.Subscribe(message => { handler.Handle(message); }, queues);
+
+                sub.Start();
+                Thread.Sleep(1000);
+                sub.Stop();
+
+                Assert.Equal(handler.StopCount, handler.Messages.Count);
+
+                OutputHelper.WriteLine("Publish time: " + StopWatch.Elapsed.ToString());
+                OutputHelper.WriteLine("Consume time: " + handler.StopWatch.Elapsed.ToString());
+            }
         }
 
         [Fact]
@@ -174,31 +178,32 @@ namespace Otc.Messaging.RabbitMQ.Tests
         {
             var msg = $"Message # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
 
-            using var bus = serviceProvider.GetService<IMessaging>();
+            using (var bus = serviceProvider.GetService<IMessaging>())
+            {
+                var pub = bus.CreatePublisher();
+                var handler = new MessageHandler { OutputHelper = OutputHelper };
+                var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-08");
 
-            var pub = bus.CreatePublisher();
-            var handler = new MessageHandler { OutputHelper = OutputHelper };
-            var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-08");
+                pub.Publish(Encoding.UTF8.GetBytes(msg), "test-08");
 
-            pub.Publish(Encoding.UTF8.GetBytes(msg), "test-08");
+                sub.Start();
+                Thread.Sleep(500);
+                sub.Stop();
 
-            sub.Start();
-            Thread.Sleep(500);
-            sub.Stop();
+                Assert.Single(handler.Messages);
+                Assert.Equal(msg, handler.Messages.First());
 
-            Assert.Single(handler.Messages);
-            Assert.Equal(msg, handler.Messages.First());
+                handler.Messages.Clear();
 
-            handler.Messages.Clear();
+                pub.Publish(Encoding.UTF8.GetBytes(msg), "test-08");
 
-            pub.Publish(Encoding.UTF8.GetBytes(msg), "test-08");
+                sub.Start();
+                Thread.Sleep(500);
+                sub.Stop();
 
-            sub.Start();
-            Thread.Sleep(500);
-            sub.Stop();
-
-            Assert.Single(handler.Messages);
-            Assert.Equal(msg, handler.Messages.First());
+                Assert.Single(handler.Messages);
+                Assert.Equal(msg, handler.Messages.First());
+            }
         }
 
         private readonly RabbitMQConfiguration configuration = new RabbitMQConfiguration
@@ -216,20 +221,21 @@ namespace Otc.Messaging.RabbitMQ.Tests
             configuration.MessageHandlerErrorBehavior = 
                 MessageHandlerErrorBehavior.RejectOnFistDelivery;
 
-            using var bus = new RabbitMQMessaging(configuration,
-                serviceProvider.GetService<ILoggerFactory>());
+            using (var bus = new RabbitMQMessaging(configuration,
+                serviceProvider.GetService<ILoggerFactory>()))
+            {
+                bus.CreatePublisher().Publish(Encoding.UTF8.GetBytes(BadMessage.Text), "test-09");
 
-            bus.CreatePublisher().Publish(Encoding.UTF8.GetBytes(BadMessage.Text), "test-09");
+                var handler = new MessageHandler { OutputHelper = OutputHelper };
+                var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-09");
 
-            var handler = new MessageHandler { OutputHelper = OutputHelper };
-            var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-09");
+                sub.Start();
+                Thread.Sleep(500);
+                sub.Stop();
 
-            sub.Start();
-            Thread.Sleep(500);
-            sub.Stop();
-
-            // only first attempt to handle the message will be in the list
-            Assert.Single(handler.Messages);
+                // only first attempt to handle the message will be in the list
+                Assert.Single(handler.Messages);
+            }
         }
 
         [Fact]
@@ -238,20 +244,21 @@ namespace Otc.Messaging.RabbitMQ.Tests
             configuration.MessageHandlerErrorBehavior =
                 MessageHandlerErrorBehavior.RejectOnRedelivery;
 
-            using var bus = new RabbitMQMessaging(configuration,
-                serviceProvider.GetService<ILoggerFactory>());
+            using (var bus = new RabbitMQMessaging(configuration,
+                serviceProvider.GetService<ILoggerFactory>()))
+            {
+                bus.CreatePublisher().Publish(Encoding.UTF8.GetBytes(BadMessage.Text), "test-10");
 
-            bus.CreatePublisher().Publish(Encoding.UTF8.GetBytes(BadMessage.Text), "test-10");
+                var handler = new MessageHandler { OutputHelper = OutputHelper };
+                var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-10");
 
-            var handler = new MessageHandler { OutputHelper = OutputHelper };
-            var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-10");
+                sub.Start();
+                Thread.Sleep(500);
+                sub.Stop();
 
-            sub.Start();
-            Thread.Sleep(500);
-            sub.Stop();
-
-            // 2 attempts to handle the message will be in the list
-            Assert.Equal(2, handler.Messages.Count);
+                // 2 attempts to handle the message will be in the list
+                Assert.Equal(2, handler.Messages.Count);
+            }
         }
 
         [Fact]
@@ -314,73 +321,77 @@ namespace Otc.Messaging.RabbitMQ.Tests
         [Fact]
         public void Test_Concurrency_Stop_When_Idle()
         {
-            using var bus = serviceProvider.GetService<IMessaging>();
-            FloodPublish(100, "test-11");
-
-            var watch = new Stopwatch();
-
-            var handler = new MessageHandler { OutputHelper = OutputHelper };
-            var sub = bus.Subscribe(message =>
+            using (var bus = serviceProvider.GetService<IMessaging>())
             {
-                lock (watch)
+                FloodPublish(100, "test-11");
+
+                var watch = new Stopwatch();
+
+                var handler = new MessageHandler { OutputHelper = OutputHelper };
+                var sub = bus.Subscribe(message =>
                 {
-                    handler.Handle(message);
-                    Thread.Sleep(100);
+                    lock (watch)
+                    {
+                        handler.Handle(message);
+                        Thread.Sleep(100);
                     // restart timer as the last thing
                     watch.Restart();
-                }
-            }, "test-11");
+                    }
+                }, "test-11");
 
-            watch.Start();
-            sub.Start();
+                watch.Start();
+                sub.Start();
 
-            // stops after 1 second idle, the sequence of operations are relevant!
-            var idle = 1000;
-            while (true)
-            {
-                // no need to check timer before idle time have actually passed
-                Thread.Sleep(idle);
-                lock (watch)
+                // stops after 1 second idle, the sequence of operations are relevant!
+                var idle = 1000;
+                while (true)
                 {
-                    if (watch.ElapsedMilliseconds > idle)
+                    // no need to check timer before idle time have actually passed
+                    Thread.Sleep(idle);
+                    lock (watch)
                     {
-                        break;
+                        if (watch.ElapsedMilliseconds > idle)
+                        {
+                            break;
+                        }
                     }
                 }
+
+                sub.Stop();
+
+                Assert.Equal(100, handler.Messages.Count);
             }
-
-            sub.Stop();
-
-            Assert.Equal(100, handler.Messages.Count);
         }
 
         [Fact]
         public void Test_Concurrency_Stop_While_Handling()
         {
-            using var bus = serviceProvider.GetService<IMessaging>();
+            using (var bus = serviceProvider.GetService<IMessaging>())
+            {
+                var pub = bus.CreatePublisher();
 
-            var pub = bus.CreatePublisher();
+                var msg = $"Message # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
 
-            var msg = $"Message # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
+                // sending 2 messages, but will consume only one
+                pub.Publish(Encoding.UTF8.GetBytes(msg), "test-01");
+                pub.Publish(Encoding.UTF8.GetBytes(msg), "test-01");
 
-            // sending 2 messages, but will consume only one
-            pub.Publish(Encoding.UTF8.GetBytes(msg), "test-01");
-            pub.Publish(Encoding.UTF8.GetBytes(msg), "test-01");
+                var handler = new MessageHandler { OutputHelper = OutputHelper };
+                var sub = bus.Subscribe(message =>
+                {
+                    // handling takes 1 second
+                    Thread.Sleep(1000);
+                    handler.Handle(message);
+                }, "test-01");
 
-            var handler = new MessageHandler { OutputHelper = OutputHelper };
-            var sub = bus.Subscribe(message => {
-                // handling takes 1 second
-                Thread.Sleep(1000);
-                handler.Handle(message);
-            }, "test-01");
+                // subscription will be stopped when second message
+                // gets to be processed
+                sub.Start();
+                Thread.Sleep(100);
+                sub.Stop();
 
-            // subscription will be stopped when second message
-            // gets to be processed
-            sub.Start();
-            Thread.Sleep(100);
-            sub.Stop();
-
-            Assert.Single(handler.Messages);
+                Assert.Single(handler.Messages);
+            }
         }
 
         private void FloodPublish(int publishCount, params string[] queues)
@@ -398,10 +409,12 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 {
                     tasks.Add(Task.Run(() =>
                     {
-                        using var pub = bus.CreatePublisher();
-                        for (int m = 0; m < 10; m++)
+                        using (var pub = bus.CreatePublisher())
                         {
-                            pub.Publish(Encoding.UTF8.GetBytes($"{msg} to {queue}"), queue);
+                            for (int m = 0; m < 10; m++)
+                            {
+                                pub.Publish(Encoding.UTF8.GetBytes($"{msg} to {queue}"), queue);
+                            }
                         }
                     }));
                 }
