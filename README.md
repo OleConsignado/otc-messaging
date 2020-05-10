@@ -45,7 +45,7 @@ byte[] messageBytes = Encoding.UTF8.GetBytes(message);
 IPublisher publisher = bus.CreatePublisher();
 
 // Publish "Hello world!" string to a topic named "TopicName"
-publisher.Publish("TopicName", messageBytes);
+publisher.Publish(messageBytes, "TopicName");
 ```
 #### Subscribe to queue(s)
 
