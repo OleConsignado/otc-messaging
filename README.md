@@ -1,4 +1,6 @@
 # Otc.Messaging
+[![Build Status](https://travis-ci.org/OleConsignado/otc-messaging.svg?branch=master)](https://travis-ci.org/OleConsignado/otc-messaging)
+
 Otc.Messaging goal is to abstract complex aspects of working with Messaging Systems by providing a simplified and easy to use API for .NET Standards 2.0. 
 
 Currently it supports only [RabbitMQ](https://rabbitmq.com/) as backend. `Otc.Messaging.RabbitMQ` was built on top of [RabbitMQ.Client](https://github.com/rabbitmq/rabbitmq-dotnet-client) and provides opinionated implementation of some common patterns.
