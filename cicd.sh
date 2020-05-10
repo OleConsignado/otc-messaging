@@ -2,7 +2,7 @@
 
 set -e
 
-CICD_COMMON_VERSION="master"
+CICD_COMMON_VERSION="v2.3"
 
 export CLASS_LIBRARY_PROJ_DIR=Source/Otc.Messaging.Abstractions
 # export TEST_PROJ_DIR=Source/Otc.AspNetCore.ApiBoot.Tests
