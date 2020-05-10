@@ -16,4 +16,4 @@ chmod +x ./cicd-common.sh
 
 export CLASS_LIBRARY_PROJ_DIR=Source/Otc.Messaging.RabbitMQ
 
-./cicd-common.sh $@cicd.sh
+./cicd-common.sh $@
