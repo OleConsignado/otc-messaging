@@ -21,7 +21,7 @@ namespace Otc.Messaging.Abstractions
         /// <param name="queues">The list of queues to consume from.</param>
         /// <returns>Instance of <see cref="ISubscription"/> ready to start
         /// consuming messages.</returns>
-        ISubscription Subscribe(Action<IMessage> handler, params string[] queues);
+        ISubscription Subscribe(Action<byte[], IMessageContext> handler, params string[] queues);
 
         /// <summary>
         /// Ensures that a given topology is configure by the broker.

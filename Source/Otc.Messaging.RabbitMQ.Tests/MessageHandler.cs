@@ -15,16 +15,17 @@ namespace Otc.Messaging.RabbitMQ.Tests
         public int StopCount;
         public bool UseLock = false;
 
-        public void Handle(IMessage message)
+        public void Handle(byte[] message, IMessageContext messageContext)
         {
             if (!StopWatch.IsRunning)
             {
                 StopWatch.Start();
             }
 
-            var text = Encoding.UTF8.GetString(message.Body);
+            var text = Encoding.UTF8.GetString(message);
 
-            OutputHelper?.WriteLine($"{nameof(MessageHandler)}: Queue: {message.Queue} - Text: {text}");
+            OutputHelper?.WriteLine($"{nameof(MessageHandler)}: " +
+                $"Queue: {messageContext.Queue} - Text: {text}");
 
             if (UseLock)
             {

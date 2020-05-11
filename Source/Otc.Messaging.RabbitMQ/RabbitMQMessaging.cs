@@ -105,7 +105,7 @@ namespace Otc.Messaging.RabbitMQ
         /// <returns>Instance of <see cref="RabbitMQSubscription"/> ready to start
         /// consuming messages.</returns>
         /// <inheritdoc/>
-        public ISubscription Subscribe(Action<IMessage> handler, params string[] queues)
+        public ISubscription Subscribe(Action<byte[], IMessageContext> handler, params string[] queues)
         {
             if (disposed)
             {

@@ -23,7 +23,7 @@ namespace Otc.Messaging.RabbitMQ
     public class RabbitMQSubscription : ISubscription
     {
         private readonly IModel channel;
-        private readonly Action<IMessage> handler;
+        private readonly Action<byte[], IMessageContext> handler;
         private readonly RabbitMQConfiguration configuration;
         private readonly RabbitMQMessaging messaging;
         private readonly string[] queues;
@@ -36,7 +36,7 @@ namespace Otc.Messaging.RabbitMQ
         public RabbitMQSubscription(
             IModel channel,
             RabbitMQChannelEventsHandler channelEvents,
-            Action<IMessage> handler,
+            Action<byte[], IMessageContext> handler,
             RabbitMQConfiguration configuration,
             RabbitMQMessaging messaging,
             ILoggerFactory loggerFactory,
@@ -176,25 +176,26 @@ namespace Otc.Messaging.RabbitMQ
 
         private void MessageHandling(string queue, BasicDeliverEventArgs ea)
         {
-            var message = new RabbitMQMessage(ea, queue);
+            var message = ea.Body.ToArray();
+            var messageContext = new RabbitMQMessageContext(ea, queue);
 
             try
             {
                 logger.LogInformation($"{nameof(MessageHandling)}: Message " +
                     "{MessageId} received from queue {Queue} " +
-                    $"with DeliveryTag {ea.DeliveryTag}", message.Id, queue);
+                    $"with DeliveryTag {ea.DeliveryTag}", messageContext.Id, queue);
 
-                handler.Invoke(message);
+                handler.Invoke(message, messageContext);
 
                 channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
 
                 logger.LogInformation($"{nameof(MessageHandling)}: Message " +
-                    "{MessageId} handle succeeded!", message.Id);
+                    "{MessageId} handle succeeded!", messageContext.Id);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"{nameof(MessageHandling)}: Message " +
-                    "{MessageId} handle failed!", message.Id);
+                    "{MessageId} handle failed!", messageContext.Id);
 
                 var requeue = false;
 
@@ -207,7 +208,8 @@ namespace Otc.Messaging.RabbitMQ
                 channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: requeue);
 
                 logger.LogWarning($"{nameof(MessageReceived)}: Message " +
-                    "{MessageId} rejected with requeue set to {Requeue}", message.Id, requeue);
+                    "{MessageId} rejected with requeue set to {Requeue}",
+                    messageContext.Id, requeue);
             }
         }
 

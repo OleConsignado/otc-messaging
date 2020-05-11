@@ -9,14 +9,14 @@ namespace Otc.Messaging.RabbitMQ
     /// It is constructed right after a message arrives and is passed 
     /// to the registered handler. All properties are readonly.
     /// </summary>
-    public class RabbitMQMessage : IMessage
+    public class RabbitMQMessageContext : IMessageContext
     {
         /// <summary>
-        /// Creates a new <see cref="RabbitMQMessage"/>.
+        /// Creates a new <see cref="RabbitMQMessageContext"/>.
         /// </summary>
         /// <param name="ea">Message's metadata sent by the broker.</param>
         /// <param name="queue">The queue it came from.</param>
-        public RabbitMQMessage(BasicDeliverEventArgs ea, string queue)
+        public RabbitMQMessageContext(BasicDeliverEventArgs ea, string queue)
         {
             Id = ea.BasicProperties.MessageId;
             Timestamp = DateTimeOffset
@@ -24,7 +24,6 @@ namespace Otc.Messaging.RabbitMQ
             Topic = ea.Exchange;
             Queue = queue;
             Redelivered = ea.Redelivered;
-            Body = ea.Body.ToArray();
         }
 
         /// <inheritdoc/>
@@ -41,8 +40,5 @@ namespace Otc.Messaging.RabbitMQ
 
         /// <inheritdoc/>
         public bool Redelivered { get; }
-
-        /// <inheritdoc/>
-        public byte[] Body { get; }
     }
 }
