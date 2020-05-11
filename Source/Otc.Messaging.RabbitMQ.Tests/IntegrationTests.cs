@@ -83,8 +83,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 });
 
                 var handler = new MessageHandler { OutputHelper = OutputHelper };
-                var subscription = bus.Subscribe(message => { handler.Handle(message); },
-                    "do-not-exist");
+                var subscription = bus.Subscribe(handler.Handle, "do-not-exist");
 
                 Assert.Throws<OperationInterruptedException>(() =>
                 {
@@ -107,8 +106,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 pub.Publish(Encoding.UTF8.GetBytes(msgB), "test-04");
 
                 var handler = new MessageHandler { OutputHelper = OutputHelper };
-                var sub = bus.Subscribe(message => { handler.Handle(message); },
-                    "test-03", "test-04");
+                var sub = bus.Subscribe(handler.Handle,"test-03", "test-04");
 
                 sub.Start();
                 Thread.Sleep(500);
@@ -138,7 +136,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
                     OutputHelper = OutputHelper,
                     StopCount = 300
                 };
-                var sub = bus.Subscribe(message => { handler.Handle(message); }, queues);
+                var sub = bus.Subscribe(handler.Handle, queues);
 
                 sub.Start();
                 Thread.Sleep(1000);
@@ -158,7 +156,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
 
             var pub = bus.CreatePublisher();
             var handler = new MessageHandler { OutputHelper = OutputHelper };
-            var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-01");
+            var sub = bus.Subscribe(handler.Handle, "test-01");
 
             bus.Dispose();
 
@@ -182,7 +180,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
             {
                 var pub = bus.CreatePublisher();
                 var handler = new MessageHandler { OutputHelper = OutputHelper };
-                var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-08");
+                var sub = bus.Subscribe(handler.Handle, "test-08");
 
                 pub.Publish(Encoding.UTF8.GetBytes(msg), "test-08");
 
@@ -227,7 +225,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 bus.CreatePublisher().Publish(Encoding.UTF8.GetBytes(BadMessage.Text), "test-09");
 
                 var handler = new MessageHandler { OutputHelper = OutputHelper };
-                var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-09");
+                var sub = bus.Subscribe(handler.Handle, "test-09");
 
                 sub.Start();
                 Thread.Sleep(500);
@@ -250,7 +248,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 bus.CreatePublisher().Publish(Encoding.UTF8.GetBytes(BadMessage.Text), "test-10");
 
                 var handler = new MessageHandler { OutputHelper = OutputHelper };
-                var sub = bus.Subscribe(message => { handler.Handle(message); }, "test-10");
+                var sub = bus.Subscribe(handler.Handle, "test-10");
 
                 sub.Start();
                 Thread.Sleep(500);
@@ -272,7 +270,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
 
                 FloodPublish(2000, "test-02");
 
-                void sharedHandler(IMessage message)
+                void sharedHandler(byte[] message, IMessageContext messageContext)
                 {
                     // lock the counter update so we don't loose any
                     lock (handler.Messages)
@@ -280,7 +278,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
                         receivedMessages++;
                     }
                     Thread.Sleep(5);
-                    handler.Handle(message);
+                    handler.Handle(message, messageContext);
                 }
 
                 var subs = new List<ISubscription>();
@@ -328,14 +326,14 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 var watch = new Stopwatch();
 
                 var handler = new MessageHandler { OutputHelper = OutputHelper };
-                var sub = bus.Subscribe(message =>
+                var sub = bus.Subscribe((message, messageContext) =>
                 {
                     lock (watch)
                     {
-                        handler.Handle(message);
+                        handler.Handle(message, messageContext);
                         Thread.Sleep(100);
-                    // restart timer as the last thing
-                    watch.Restart();
+                        // restart timer as the last thing
+                        watch.Restart();
                     }
                 }, "test-11");
 
@@ -377,11 +375,10 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 pub.Publish(Encoding.UTF8.GetBytes(msg), "test-01");
 
                 var handler = new MessageHandler { OutputHelper = OutputHelper };
-                var sub = bus.Subscribe(message =>
-                {
+                var sub = bus.Subscribe((message, messageContext) => {
                     // handling takes 1 second
                     Thread.Sleep(1000);
-                    handler.Handle(message);
+                    handler.Handle(message, messageContext);
                 }, "test-01");
 
                 // subscription will be stopped when second message

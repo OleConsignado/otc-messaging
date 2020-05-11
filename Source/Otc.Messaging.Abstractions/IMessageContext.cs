@@ -3,9 +3,9 @@
 namespace Otc.Messaging.Abstractions
 {
     /// <summary>
-    /// Represents a message received by a consumer.
+    /// Context metadata of a message received by a consumer.
     /// </summary>
-    public interface IMessage
+    public interface IMessageContext
     {
         /// <summary>
         /// Application generated Message Id.
@@ -32,10 +32,5 @@ namespace Otc.Messaging.Abstractions
         /// to a consumer before and was not acknowledged.
         /// </summary>
         bool Redelivered { get; }
-
-        /// <summary>
-        /// Content of the message.
-        /// </summary>
-        byte[] Body { get; }
     }
 }
