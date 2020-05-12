@@ -23,7 +23,7 @@ At startup, add `IMessaging` to your service collection by calling `AddRabbitMQ`
 ```cs
 services.AddRabbitMQ(new RabbitMQConfiguration
 { 
-    Host = "localhost",
+    Hosts = new List<string> { "localhost" },
     Port = 5672,
     User = "guest",
     Password = "guest"
@@ -49,6 +49,7 @@ IPublisher publisher = bus.CreatePublisher();
 // Publish "Hello world!" string to a topic named "TopicName"
 publisher.Publish(messageBytes, "TopicName");
 ```
+
 #### Subscribe to queue(s)
 
 Subscribe to queue(s) and start consuming:
@@ -57,14 +58,73 @@ Subscribe to queue(s) and start consuming:
 IMessaging bus = ... // taken from service provider
 
 // Subscribe to "QueueName1" and "QueueName2" queues
-ISubscription subscription = bus.Subscribe(message =>
+ISubscription subscription = bus.Subscribe((message, messageContext) =>
 {
     // do something useful with the message
 }
-, "QueueName1", "QueueName2", ...);
+, "QueueName1", "QueueName2");
 
 // Start consuming messages
 subscription.Start();
+
+// Consuming messages ...
+// Thread.Sleep(10000);
+
+// To stop consuming messages
+subscription.Stop();
+```
+
+### Typed Messages
+
+You can publish and consume typed object messages along with the implementation package of choice.
+
+Install additional NuGet packages so you will get some extensions to `IMessaging` interface:
+
+* [Otc.Messaging.Typed.Abstractions](https://www.nuget.org/packages/Otc.Messaging.Typed.Abstractions) - Interfaces you need to use typed messages;
+* [Otc.Messaging.Typed](https://www.nuget.org/packages/Otc.Messaging.Typed) - Typed messages implementation.
+
+** *Curretly only pre-release packages are available*
+
+At startup, add a call to `AddTypedMessaging` extension method for `IServiceCollection` (`AddTypedMessaging` lives at `Otc.Messaging.Typed` assembly):
+
+#### Publish to a topic
+
+```cs
+IMessaging bus = ... // get messaging bus from service provider (using dependency injection)
+
+public class MyMessage
+{
+    public string Text { get; set; }
+}
+
+var message = new MyMessage { Text = "Hello world!" };
+
+// Create a publisher for MyMessage
+IPublisher publisher = bus.CreatePublisher<MyMessage>();
+
+// Publish MyMessage to a topic named "TopicName"
+publisher.Publish(message, "TopicName");
+```
+
+#### Subscribe to queue(s)
+
+Subscribe to queue(s) and start consuming:
+
+```cs
+IMessaging bus = ... // taken from service provider
+
+// Subscribe to "QueueName1" and "QueueName2" queues
+ISubscription subscription = bus.Subscribe<MyMessage>((message, messageContext) =>
+{
+    // do something useful with MyMessage
+}
+, "QueueName1", "QueueName2");
+
+// Start consuming messages
+subscription.Start();
+
+// Consuming messages ...
+// Thread.Sleep(10000);
 
 // To stop consuming messages
 subscription.Stop();
