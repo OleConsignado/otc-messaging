@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Ole Consignado</Authors>
+    <Copyright>Ole Consignado (c) 2020</Copyright>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <PackageProjectUrl>https://github.com/OleConsignado/otc-messaging/</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\netstandard2.0\Otc.Messaging.Typed.Abstractions.xml</DocumentationFile>
+    <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\Otc.Messaging.Typed.Abstractions.xml</DocumentationFile>
+    <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Otc.Messaging.Abstractions\Otc.Messaging.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

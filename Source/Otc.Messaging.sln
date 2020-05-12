@@ -11,6 +11,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.RabbitMQ.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.RabbitMQ.PredefinedTopologies", "Otc.Messaging.RabbitMQ.PredefinedTopologies\Otc.Messaging.RabbitMQ.PredefinedTopologies.csproj", "{6721EDB8-6BD6-4C62-96DD-C70597C2B7E5}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.Typed", "Otc.Messaging.Typed\Otc.Messaging.Typed.csproj", "{53DA8FF8-B677-413C-81DE-31A80449ADE3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.Typed.Tests", "Otc.Messaging.Typed.Tests\Otc.Messaging.Typed.Tests.csproj", "{A498D521-EEAA-4759-931C-83A08877B3D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otc.Messaging.Typed.Abstractions", "Otc.Messaging.Typed.Abstractions\Otc.Messaging.Typed.Abstractions.csproj", "{DCAB2D24-2361-43CB-BB1B-D936EA69F465}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +39,18 @@ Global
 		{6721EDB8-6BD6-4C62-96DD-C70597C2B7E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6721EDB8-6BD6-4C62-96DD-C70597C2B7E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6721EDB8-6BD6-4C62-96DD-C70597C2B7E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53DA8FF8-B677-413C-81DE-31A80449ADE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53DA8FF8-B677-413C-81DE-31A80449ADE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53DA8FF8-B677-413C-81DE-31A80449ADE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53DA8FF8-B677-413C-81DE-31A80449ADE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A498D521-EEAA-4759-931C-83A08877B3D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A498D521-EEAA-4759-931C-83A08877B3D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A498D521-EEAA-4759-931C-83A08877B3D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A498D521-EEAA-4759-931C-83A08877B3D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCAB2D24-2361-43CB-BB1B-D936EA69F465}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCAB2D24-2361-43CB-BB1B-D936EA69F465}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCAB2D24-2361-43CB-BB1B-D936EA69F465}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCAB2D24-2361-43CB-BB1B-D936EA69F465}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
