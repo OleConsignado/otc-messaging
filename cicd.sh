@@ -15,9 +15,13 @@ chmod +x ./cicd-common.sh
 ./cicd-common.sh $@
 
 export CLASS_LIBRARY_PROJ_DIR=Source/Otc.Messaging.RabbitMQ
-
 ./cicd-common.sh $@
 
 export CLASS_LIBRARY_PROJ_DIR=Source/Otc.Messaging.RabbitMQ.PredefinedTopologies
+./cicd-common.sh $@
 
+export CLASS_LIBRARY_PROJ_DIR=Source/Otc.Messaging.Typed.Abstractions
+./cicd-common.sh $@
+
+export CLASS_LIBRARY_PROJ_DIR=Source/Otc.Messaging.Typed
 ./cicd-common.sh $@
