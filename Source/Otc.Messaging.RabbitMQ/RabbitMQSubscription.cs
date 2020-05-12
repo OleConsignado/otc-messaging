@@ -5,6 +5,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Otc.Messaging.RabbitMQ
 {
@@ -31,6 +32,7 @@ namespace Otc.Messaging.RabbitMQ
         private readonly IDictionary<string, string> consumersToQueues;
 
         // holds per channel instance of events listener
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly RabbitMQChannelEventsHandler channelEvents;
 
         public RabbitMQSubscription(

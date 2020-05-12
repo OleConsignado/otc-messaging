@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Otc.Messaging.Abstractions.Exceptions;
+using System;
 
 namespace Otc.Messaging.Abstractions
 {

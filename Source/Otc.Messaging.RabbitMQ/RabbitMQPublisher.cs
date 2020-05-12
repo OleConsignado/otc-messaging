@@ -3,6 +3,7 @@ using Otc.Messaging.Abstractions;
 using Otc.Messaging.Abstractions.Exceptions;
 using RabbitMQ.Client;
 using System;
+using System.ComponentModel;
 
 namespace Otc.Messaging.RabbitMQ
 {
@@ -23,6 +24,7 @@ namespace Otc.Messaging.RabbitMQ
         private readonly ILogger logger;
 
         // holds per channel instance of events listener
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly RabbitMQChannelEventsHandler channelEvents;
 
         public RabbitMQPublisher(

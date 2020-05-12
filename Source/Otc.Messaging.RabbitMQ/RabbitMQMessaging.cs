@@ -127,7 +127,7 @@ namespace Otc.Messaging.RabbitMQ
         /// <summary>
         /// Applies a given topology to the broker.
         /// </summary>
-        /// <param name="name">Topology name loaded in <see cref="Topologies"/>.</param>
+        /// <param name="name">Topology name loaded in <see cref="Topology"/>.</param>
         /// <remarks>
         /// All Exchanges and it's queues and bindings will be declared via 
         /// ExchangeDeclare, QueueDeclare e QueueBind.
