@@ -13,7 +13,11 @@ namespace Otc.Messaging.Typed
         /// <remarks>Objects are serialized to JSON strings.</remarks>
         public byte[] Serialize<T>(T message)
         {
-            var messageString = JsonConvert.SerializeObject(message);
+            var messageString = JsonConvert.SerializeObject(message,
+                settings: new JsonSerializerSettings
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                });
             var messageBytes = Encoding.UTF8.GetBytes(messageString);
             return messageBytes;
         }
