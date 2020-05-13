@@ -48,7 +48,7 @@ namespace Otc.Messaging.Typed.Tests
         {
             using (var bus = serviceProvider.GetService<IMessaging>())
             {
-                var pub = bus.CreatePublisher<MessageType>();
+                var pub = bus.CreatePublisher();
 
                 var sentMessage = new MessageType
                 {

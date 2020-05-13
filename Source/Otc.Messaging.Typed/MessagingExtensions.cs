@@ -16,18 +16,6 @@ namespace Otc.Messaging.Abstractions
         internal static ISerializer Serializer { get; set; }
 
         /// <summary>
-        /// Creates a publisher for messages of type T
-        /// </summary>
-        /// <typeparam name="T">The type of message object.</typeparam>
-        /// <param name="messaging">The Messaging instance being extended.</param>
-        /// <returns><see cref="Publisher{T}"/> default implementation of 
-        /// <see cref="IPublisher{T}"/></returns>
-        public static IPublisher<T> CreatePublisher<T>(this IMessaging messaging)
-        {
-            return new Publisher<T>(messaging, Serializer);
-        }
-
-        /// <summary>
         /// Creates a subscription for messages of type T
         /// </summary>
         /// <typeparam name="T">The type of message object.</typeparam>
