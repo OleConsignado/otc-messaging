@@ -1,4 +1,3 @@
-﻿using Otc.Messaging.Typed;
 using Otc.Messaging.Typed.Abstractions;
 using System;
 
@@ -9,11 +8,7 @@ namespace Otc.Messaging.Abstractions
     /// </summary>
     public static class MessagingExtensions
     {
-        /// <summary>
-        /// Singleton instance of <see cref="ISerializer"/> used for message serialization
-        /// and deserialization
-        /// </summary>
-        internal static ISerializer Serializer { get; set; }
+        public static ISerializer Serializer { get; set; }
 
         /// <summary>
         /// Creates a subscription for messages of type T
@@ -22,12 +17,15 @@ namespace Otc.Messaging.Abstractions
         /// <param name="messaging">The Messaging instance being extendend.</param>
         /// <param name="handler">The message handler.</param>
         /// <param name="queues">The queues to be consumed.</param>
-        /// <returns><see cref="Subscription{T}"/> default implementation of 
-        /// <see cref="ISubscription{T}"/></returns>
-        public static ISubscription<T> Subscribe<T>(this IMessaging messaging,
+        /// <returns><see cref="ISubscription"/></returns>
+        public static ISubscription Subscribe<T>(this IMessaging messaging,
             Action<T, IMessageContext> handler, params string[] queues)
         {
-            return new Subscription<T>(messaging, Serializer, handler, queues);
+            return messaging.Subscribe((message, messageContext) =>
+            {
+                var typedMessage = Serializer.Deserialize<T>(message);
+                handler.Invoke(typedMessage, messageContext);
+            }, queues);
         }
     }
 }

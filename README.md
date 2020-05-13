@@ -80,8 +80,8 @@ You can publish and consume typed object messages along with the implementation 
 
 Install additional NuGet packages so you will get some extensions to `IMessaging` interface:
 
-* [Otc.Messaging.Typed.Abstractions](https://www.nuget.org/packages/Otc.Messaging.Typed.Abstractions) - Interfaces you need to use typed messages;
-* [Otc.Messaging.Typed](https://www.nuget.org/packages/Otc.Messaging.Typed) - Typed messages implementation.
+* [Otc.Messaging.Typed.Abstractions](https://www.nuget.org/packages/Otc.Messaging.Typed.Abstractions) - Interfaces and Extensions you need to use typed messages;
+* [Otc.Messaging.Typed](https://www.nuget.org/packages/Otc.Messaging.Typed) - Default serializer implementation and registration.
 
 ** *Curretly only pre-release packages are available*
 
@@ -100,7 +100,7 @@ public class MyMessage
 var message = new MyMessage { Text = "Hello world!" };
 
 // Create a publisher for MyMessage
-IPublisher publisher = bus.CreatePublisher<MyMessage>();
+IPublisher publisher = bus.CreatePublisher();
 
 // Publish MyMessage to a topic named "TopicName"
 publisher.Publish(message, "TopicName");

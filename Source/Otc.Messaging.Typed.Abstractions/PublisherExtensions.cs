@@ -1,6 +1,4 @@
-﻿using Otc.Messaging.Abstractions;
-
-namespace Otc.Messaging.Typed
+namespace Otc.Messaging.Abstractions
 {
     public static class PublisherExtensions
     {
