@@ -109,11 +109,63 @@ namespace Otc.Messaging.RabbitMQ.Tests
                 var sub = bus.Subscribe(handler.Handle,"test-03", "test-04");
 
                 sub.Start();
-                Thread.Sleep(500);
+                Thread.Sleep(2000);
                 sub.Stop();
 
                 Assert.True(handler.Messages.Contains(msgA));
                 Assert.True(handler.Messages.Contains(msgB));
+            }
+        }
+
+        [Fact]
+        public async Task Test_Publish_And_Subscription_Async()
+        {
+            using (var bus = serviceProvider.GetService<IMessaging>())
+            {
+                var pub = bus.CreatePublisher();
+
+                var msg = $"Message # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
+                pub.Publish(Encoding.UTF8.GetBytes(msg), "test-12");
+
+                var handler = new MessageHandler { OutputHelper = OutputHelper };
+                var sub = bus.Subscribe(handler.Handle, "test-12");
+
+                var cts = new CancellationTokenSource();
+
+                _ = sub.StartAsync(cts.Token);
+
+                await Task.Delay(2000);
+
+                cts.Cancel();
+
+                Assert.True(handler.Messages.Contains(msg));
+            }
+        }
+
+        [Fact]
+        public async Task Test_Publish_And_Subscription_Async_Awaited()
+        {
+            using (var bus = serviceProvider.GetService<IMessaging>())
+            {
+                var pub = bus.CreatePublisher();
+
+                var msg = $"Message # {DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
+                pub.Publish(Encoding.UTF8.GetBytes(msg), "test-13");
+
+                var handler = new MessageHandler { OutputHelper = OutputHelper };
+                var sub = bus.Subscribe(handler.Handle, "test-13");
+
+                var cts = new CancellationTokenSource();
+
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(5000);
+                    cts.Cancel();
+                });
+
+                await sub.StartAsync(cts.Token);
+
+                Assert.True(handler.Messages.Contains(msg));
             }
         }
 
@@ -419,5 +471,5 @@ namespace Otc.Messaging.RabbitMQ.Tests
 
             Task.WaitAll(tasks.ToArray());
         }
-    }
+     }
 }

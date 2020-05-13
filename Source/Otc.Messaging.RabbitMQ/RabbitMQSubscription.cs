@@ -6,6 +6,8 @@ using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Otc.Messaging.RabbitMQ
 {
@@ -34,6 +36,8 @@ namespace Otc.Messaging.RabbitMQ
         // holds per channel instance of events listener
         [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly RabbitMQChannelEventsHandler channelEvents;
+
+        private CancellationToken cancellationToken;
 
         public RabbitMQSubscription(
             IModel channel,
@@ -69,6 +73,24 @@ namespace Otc.Messaging.RabbitMQ
         }
 
         /// <inheritdoc/>
+        /// <inheritdoc cref="Start"/>
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            this.cancellationToken = cancellationToken;
+
+            StartConsuming();
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(50);
+            }
+
+            logger.LogInformation($"{nameof(StartAsync)}: Cancellation requested.");
+
+            Stop();
+        }
+
+        /// <inheritdoc/>
         /// <remarks>
         /// The consumer of messages runs on a thread of its own.
         /// All messages from all subscribed queues will be passed to the handler 
@@ -76,9 +98,11 @@ namespace Otc.Messaging.RabbitMQ
         /// <para></para>
         /// <inheritdoc cref="RabbitMQSubscription"/>
         /// </remarks>
-        public void Start()
+        public void Start() => StartConsuming();
+
+        private void StartConsuming()
         {
-            logger.LogInformation($"{nameof(Start)}: Subscription starting ...");
+            logger.LogInformation($"{nameof(StartConsuming)}: Subscription starting ...");
 
             if (disposed)
             {
@@ -101,7 +125,7 @@ namespace Otc.Messaging.RabbitMQ
                     var tag = channel.BasicConsume(queue: queue, autoAck: false, consumer: consumer);
                     consumersToQueues.Add(tag, queue);
 
-                    logger.LogInformation($"{nameof(Start)}: Consumer {tag} of queue " +
+                    logger.LogInformation($"{nameof(StartConsuming)}: Consumer {tag} of queue " +
                         "{Queue} started", queue);
                 }
             }
@@ -179,7 +203,7 @@ namespace Otc.Messaging.RabbitMQ
         private void MessageHandling(string queue, BasicDeliverEventArgs ea)
         {
             var message = ea.Body.ToArray();
-            var messageContext = new RabbitMQMessageContext(ea, queue);
+            var messageContext = new RabbitMQMessageContext(ea, queue, cancellationToken);
 
             try
             {
