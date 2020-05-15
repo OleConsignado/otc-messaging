@@ -37,7 +37,7 @@ namespace Otc.Messaging.RabbitMQ
         [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly RabbitMQChannelEventsHandler channelEvents;
 
-        private CancellationToken cancellationToken = default;
+        private CancellationToken cancellationToken = default(CancellationToken);
 
         public RabbitMQSubscription(
             IModel channel,
