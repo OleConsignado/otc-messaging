@@ -1,6 +1,7 @@
 ﻿using Otc.Messaging.Abstractions;
 using RabbitMQ.Client.Events;
 using System;
+using System.Threading;
 
 namespace Otc.Messaging.RabbitMQ
 {
@@ -16,7 +17,9 @@ namespace Otc.Messaging.RabbitMQ
         /// </summary>
         /// <param name="ea">Message's metadata sent by the broker.</param>
         /// <param name="queue">The queue it came from.</param>
-        public RabbitMQMessageContext(BasicDeliverEventArgs ea, string queue)
+        /// <param name="cancellationToken">The token for async cancellation.</param>
+        public RabbitMQMessageContext(
+            BasicDeliverEventArgs ea, string queue, CancellationToken cancellationToken)
         {
             Id = ea.BasicProperties.MessageId;
             Timestamp = DateTimeOffset
@@ -24,6 +27,7 @@ namespace Otc.Messaging.RabbitMQ
             Topic = ea.Exchange;
             Queue = queue;
             Redelivered = ea.Redelivered;
+            CancellationToken = cancellationToken;
         }
 
         /// <inheritdoc/>
@@ -40,5 +44,8 @@ namespace Otc.Messaging.RabbitMQ
 
         /// <inheritdoc/>
         public bool Redelivered { get; }
+
+        /// <inheritdoc/>
+        public CancellationToken CancellationToken { get; }
     }
 }

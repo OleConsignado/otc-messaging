@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace Otc.Messaging.Abstractions
 {
@@ -32,5 +33,10 @@ namespace Otc.Messaging.Abstractions
         /// to a consumer before and was not acknowledged.
         /// </summary>
         bool Redelivered { get; }
+
+        /// <summary>
+        /// The token to check for async cancellation request.
+        /// </summary>
+        CancellationToken CancellationToken { get; }
     }
 }

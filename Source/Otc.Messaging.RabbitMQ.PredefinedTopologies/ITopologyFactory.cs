@@ -1,5 +1,4 @@
 ﻿using Otc.Messaging.RabbitMQ.Configurations;
-using System.Collections.Generic;
 
 namespace Otc.Messaging.RabbitMQ.PredefinedTopologies
 {

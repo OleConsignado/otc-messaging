@@ -1,6 +1,8 @@
 ﻿using Otc.Messaging.Abstractions;
 using Otc.Messaging.Typed.Abstractions;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Otc.Messaging.Typed
 {
@@ -26,6 +28,12 @@ namespace Otc.Messaging.Typed
                 var typedMessage = serializer.Deserialize<T>(message);
                 handler.Invoke(typedMessage, messageContext);
             }, queues);
+        }
+
+        /// <inheritdoc/>
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            await subscription.StartAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
