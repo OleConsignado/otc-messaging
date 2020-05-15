@@ -1,5 +1,6 @@
 using Otc.Messaging.Typed.Abstractions;
 using System;
+using System.ComponentModel;
 
 namespace Otc.Messaging.Abstractions
 {
@@ -8,6 +9,7 @@ namespace Otc.Messaging.Abstractions
     /// </summary>
     public static class MessagingExtensions
     {
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static ISerializer Serializer { get; set; }
 
         /// <summary>
