@@ -38,6 +38,8 @@ namespace Otc.Messaging.RabbitMQ
         public readonly RabbitMQChannelEventsHandler channelEvents;
 
         private CancellationToken cancellationToken = default(CancellationToken);
+        private readonly int ChannelClosedErrorMessageIntervalSeconds = 60;
+        private bool stopping = false;
 
         public RabbitMQSubscription(
             IModel channel,
@@ -116,10 +118,10 @@ namespace Otc.Messaging.RabbitMQ
 
             var consumer = new EventingBasicConsumer(channel);
             consumer.Received += MessageReceived;
+            consumer.ConsumerCancelled += ConsumerCancelled;
 
             lock (consumersToQueues)
             {
-
                 foreach (var queue in queues)
                 {
                     var tag = channel.BasicConsume(queue: queue, autoAck: false, consumer: consumer);
@@ -165,6 +167,8 @@ namespace Otc.Messaging.RabbitMQ
             {
                 if (channel?.IsOpen ?? false)
                 {
+                    stopping = true;
+
                     foreach (var tag in consumersToQueues)
                     {
                         channel.BasicCancel(tag.Key);
@@ -172,6 +176,8 @@ namespace Otc.Messaging.RabbitMQ
                         logger.LogInformation($"{nameof(Stop)}: Consumer {tag.Key} " +
                             $"of queue " + "{Queue} stopped", tag.Value);
                     }
+
+                    stopping = false;
                 }
 
                 consumersToQueues.Clear();
@@ -180,10 +186,6 @@ namespace Otc.Messaging.RabbitMQ
 
         private void MessageReceived(object sender, BasicDeliverEventArgs ea)
         {
-            logger.LogDebug($"{nameof(MessageReceived)}: Message " +
-                "{MessageId} received by " + $"{ea.ConsumerTag} " +
-                $"with DeliveryTag {ea.DeliveryTag}", ea.BasicProperties.MessageId);
-
             lock (consumersToQueues)
             {
                 if (consumersToQueues.TryGetValue(ea.ConsumerTag, out string queue))
@@ -192,9 +194,9 @@ namespace Otc.Messaging.RabbitMQ
                 }
                 else
                 {
-                    logger.LogDebug($"{nameof(MessageReceived)}: Message " +
+                    logger.LogInformation($"{nameof(MessageReceived)}: Message " +
                         "{MessageId} sent to " + $"{ea.ConsumerTag} " +
-                        $"with DeliveryTag {ea.DeliveryTag} was returned because " +
+                        $"with DeliveryTag (#{ea.DeliveryTag}) was returned because " +
                         $"subscription was stopped", ea.BasicProperties.MessageId);
                 }
             }
@@ -209,19 +211,39 @@ namespace Otc.Messaging.RabbitMQ
             {
                 logger.LogInformation($"{nameof(MessageHandling)}: Message " +
                     "{MessageId} received from queue {Queue} " +
-                    $"with DeliveryTag {ea.DeliveryTag}", messageContext.Id, queue);
+                    $"with DeliveryTag (#{ea.DeliveryTag})", messageContext.Id, queue);
 
-                handler.Invoke(message, messageContext);
+                if (channel.IsOpen)
+                {
+                    handler.Invoke(message, messageContext);
 
-                channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                    if (channel.IsOpen)
+                    {
+                        channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
 
-                logger.LogInformation($"{nameof(MessageHandling)}: Message " +
-                    "{MessageId} handle succeeded!", messageContext.Id);
+                        logger.LogInformation($"{nameof(MessageHandling)}: Message " +
+                            "{MessageId} handle succeeded!" +
+                            $" (#{ea.DeliveryTag})", messageContext.Id);
+                    }
+                    else
+                    {
+                        logger.LogWarning($"{nameof(MessageHandling)}: Message " +
+                            "{MessageId} ack not sent. Channel is closed." +
+                            $" (#{ea.DeliveryTag})", messageContext.Id);
+                    }
+                }
+                else
+                {
+                    logger.LogWarning($"{nameof(MessageHandling)}: Message " +
+                        "{MessageId} handle bypassed. Channel is closed." +
+                        $" (#{ea.DeliveryTag})", messageContext.Id);
+                }
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"{nameof(MessageHandling)}: Message " +
-                    "{MessageId} handle failed!", messageContext.Id);
+                    "{MessageId} handle failed!" +
+                    $" (#{ea.DeliveryTag})", messageContext.Id);
 
                 var requeue = false;
 
@@ -231,11 +253,34 @@ namespace Otc.Messaging.RabbitMQ
                     requeue = true;
                 }
 
-                channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: requeue);
+                if (channel.IsOpen)
+                {
+                    channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: requeue);
 
-                logger.LogWarning($"{nameof(MessageReceived)}: Message " +
-                    "{MessageId} rejected with requeue set to {Requeue}",
-                    messageContext.Id, requeue);
+                    logger.LogWarning($"{nameof(MessageReceived)}: Message " +
+                        "{MessageId} rejected with requeue set to {Requeue}!" +
+                        $" (#{ea.DeliveryTag})", messageContext.Id, requeue);
+                }
+                else
+                {
+                    logger.LogWarning($"{nameof(MessageHandling)}: Message " +
+                        "{MessageId} nack not sent. Channel is closed." +
+                        $" (#{ea.DeliveryTag})", messageContext.Id);
+                }
+            }
+        }
+
+        private void ConsumerCancelled(object sender, ConsumerEventArgs ea)
+        {
+            if (!stopping)
+            {
+                while (channel.IsClosed)
+                {
+                    logger.LogError($"{nameof(ConsumerCancelled)}: " +
+                        $"Subscription channel is closed. Waiting auto recovery ...");
+
+                    Thread.Sleep(ChannelClosedErrorMessageIntervalSeconds * 1000);
+                }
             }
         }
 
@@ -272,5 +317,5 @@ namespace Otc.Messaging.RabbitMQ
 
             disposed = true;
         }
-    }
+   }
 }

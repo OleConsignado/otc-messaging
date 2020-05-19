@@ -26,36 +26,41 @@ namespace Otc.Messaging.RabbitMQ
         private readonly ICollection<RabbitMQPublisher> publishers;
         private readonly ICollection<RabbitMQSubscription> subscriptions;
 
+        private readonly object lockpad = new object();
         private IConnection connection;
         private IConnection Connection
         {
             get
             {
-                if (connection?.IsOpen ?? false)
+                lock (lockpad)
                 {
+                    if (connection?.IsOpen ?? false)
+                    {
+                        return connection;
+                    }
+
+                    var factory = new ConnectionFactory()
+                    {
+                        Port = configuration.Port,
+                        UserName = configuration.User,
+                        Password = configuration.Password,
+                        ClientProvidedName = configuration.ClientProvidedName,
+                        AutomaticRecoveryEnabled = true,
+                        NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
+                        RequestedHeartbeat = TimeSpan.FromSeconds(20)
+                    };
+
+                    logger.LogInformation($"{nameof(Connection)}: Connecting to " +
+                        $"{configuration.Hostnames} on port {configuration.Port} " +
+                        $"with user {configuration.User}");
+
+                    connection = factory.CreateConnection(configuration.Hosts);
+
+                    logger.LogInformation($"{nameof(Connection)}: Connected to endpoint " +
+                        "{Endpoint}", connection.Endpoint.ToString());
+
                     return connection;
                 }
-
-                var factory = new ConnectionFactory()
-                {
-                    Port = configuration.Port,
-                    UserName = configuration.User,
-                    Password = configuration.Password,
-                    ClientProvidedName = nameof(RabbitMQ)
-                };
-
-                factory.AutomaticRecoveryEnabled = true;
-                factory.NetworkRecoveryInterval = TimeSpan.FromSeconds(10);
-
-                logger.LogInformation($"{nameof(Connection)}: Connecting to " +
-                    $"{configuration.Hostnames}:{configuration.Port} with user {configuration.User}");
-
-                connection = factory.CreateConnection(configuration.Hosts, nameof(RabbitMQMessaging));
-
-                logger.LogInformation($"{nameof(Connection)}: Connected to endpoint " +
-                    "{Endpoint}", connection.Endpoint.ToString());
-
-                return connection;
             }
         }
 
@@ -166,12 +171,18 @@ namespace Otc.Messaging.RabbitMQ
 
         internal void RemovePublisher(RabbitMQPublisher item)
         {
-            publishers.Remove(item);
+            lock (publishers)
+            {
+                publishers.Remove(item);
+            }
         }
 
         internal void RemoveSubscription(RabbitMQSubscription item)
         {
-            subscriptions.Remove(item);
+            lock (subscriptions)
+            {
+                subscriptions.Remove(item);
+            }
         }
 
         private bool disposed = false;

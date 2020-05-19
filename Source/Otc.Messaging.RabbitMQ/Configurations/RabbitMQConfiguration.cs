@@ -42,6 +42,11 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         public string Password { set; get; }
 
         /// <summary>
+        /// Client provided name to be used for connection identification.
+        /// </summary>
+        public string ClientProvidedName { get; set; } = $"otc-messaging";
+
+        /// <summary>
         /// Timeout in milliseconds. Throws an exception if confirmation wait time is exceded or
         /// if broker sends back an nack. Default is 15 seconds.
         /// </summary>
