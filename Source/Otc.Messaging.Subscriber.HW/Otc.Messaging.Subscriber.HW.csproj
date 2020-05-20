@@ -20,9 +20,12 @@
 
   <ItemGroup>
     <PackageReference Include="Otc.AspNetCore.ApiBoot" Version="3.2.0" />
-    <PackageReference Include="Otc.Messaging.Typed" Version="1.0.0-alpha7" />
-    <PackageReference Include="Otc.Messaging.RabbitMQ" Version="1.0.0-alpha7" />
     <PackageReference Include="Otc.HostedWorker" Version="1.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Otc.Messaging.RabbitMQ\Otc.Messaging.RabbitMQ.csproj" />
+    <ProjectReference Include="..\Otc.Messaging.Typed\Otc.Messaging.Typed.csproj" />
   </ItemGroup>
 
 </Project>
