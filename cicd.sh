@@ -25,3 +25,6 @@ export CLASS_LIBRARY_PROJ_DIR=Source/Otc.Messaging.Typed.Abstractions
 
 export CLASS_LIBRARY_PROJ_DIR=Source/Otc.Messaging.Typed
 ./cicd-common.sh $@
+
+export CLASS_LIBRARY_PROJ_DIR=Source/Otc.Messaging.Subscriber.HW
+./cicd-common.sh $@

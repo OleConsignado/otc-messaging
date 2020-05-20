@@ -129,3 +129,7 @@ subscription.Start();
 // To stop consuming messages
 subscription.Stop();
 ```
+
+### Subscriber Hosted Worker
+
+TODO: write about it.

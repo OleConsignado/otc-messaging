@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.Typed", "Otc.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.Typed.Tests", "Otc.Messaging.Typed.Tests\Otc.Messaging.Typed.Tests.csproj", "{A498D521-EEAA-4759-931C-83A08877B3D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otc.Messaging.Typed.Abstractions", "Otc.Messaging.Typed.Abstractions\Otc.Messaging.Typed.Abstractions.csproj", "{DCAB2D24-2361-43CB-BB1B-D936EA69F465}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.Typed.Abstractions", "Otc.Messaging.Typed.Abstractions\Otc.Messaging.Typed.Abstractions.csproj", "{DCAB2D24-2361-43CB-BB1B-D936EA69F465}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.Subscriber.HW", "Otc.Messaging.Subscriber.HW\Otc.Messaging.Subscriber.HW.csproj", "{A954B24E-982E-460A-8BE5-A1B559A968AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{DCAB2D24-2361-43CB-BB1B-D936EA69F465}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCAB2D24-2361-43CB-BB1B-D936EA69F465}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCAB2D24-2361-43CB-BB1B-D936EA69F465}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A954B24E-982E-460A-8BE5-A1B559A968AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A954B24E-982E-460A-8BE5-A1B559A968AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A954B24E-982E-460A-8BE5-A1B559A968AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A954B24E-982E-460A-8BE5-A1B559A968AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
