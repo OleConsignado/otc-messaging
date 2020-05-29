@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton(configuration);
-            services.AddSingleton<IMessaging, RabbitMQMessaging>();
+            services.AddScoped<IMessaging, RabbitMQMessaging>();
 
             return services;
         }
