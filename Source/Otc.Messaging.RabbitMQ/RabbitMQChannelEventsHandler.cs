@@ -36,7 +36,7 @@ namespace Otc.Messaging.RabbitMQ
         {
             // this event is triggered when any exception occurs inside consumer execution
             // chain, so we log it as error
-            logger.LogError(ea.Exception, $"{nameof(CallbackExceptionEvent)}: Channel " +
+            logger.LogError(123, ea.Exception, $"{nameof(CallbackExceptionEvent)}: Channel " +
                 $"{channel.ChannelNumber} caught an exception inside consumer with nessage " +
                 "{MessageConsumerException} ", ea.Exception.Message);
         }

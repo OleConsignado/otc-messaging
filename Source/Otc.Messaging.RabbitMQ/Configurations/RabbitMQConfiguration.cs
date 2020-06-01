@@ -1,4 +1,4 @@
-﻿using Otc.ComponentModel.DataAnnotations;
+﻿
 using Otc.Messaging.Abstractions.Exceptions;
 using RabbitMQ.Client;
 using System;
@@ -16,7 +16,7 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         /// List of hosts names or ip addresses to connect to.
         /// Enter multiple options if you have a cluster configured.
         /// </summary>
-        [Required]
+
         public IList<string> Hosts { set; get; }
         
         /// <summary>
@@ -32,13 +32,13 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         /// <summary>
         /// User for connection.
         /// </summary>
-        [Required]
+
         public string User { set; get; }
 
         /// <summary>
         /// User's password for connection.
         /// </summary>
-        [Required]
+
         public string Password { set; get; }
 
         /// <summary>

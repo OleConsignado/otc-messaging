@@ -41,7 +41,7 @@ namespace Otc.Messaging.RabbitMQ
                     Port = configuration.Port,
                     UserName = configuration.User,
                     Password = configuration.Password,
-                    ClientProvidedName = nameof(RabbitMQ)
+                    //ClientProvidedName = nameof(RabbitMQ)
                 };
 
                 factory.AutomaticRecoveryEnabled = true;
@@ -87,7 +87,9 @@ namespace Otc.Messaging.RabbitMQ
                 throw new ObjectDisposedException(nameof(RabbitMQMessaging));
             }
 
-            var (channel, channelEvents) = CreateChannel();
+            var createChannelResult = CreateChannel();
+            var channel = createChannelResult.Channel;
+            var channelEvents = createChannelResult.ChannelEvents;
 
             var publisher = new RabbitMQPublisher(channel, channelEvents,
                 configuration.PublishConfirmationTimeoutMilliseconds, this, loggerFactory);
@@ -112,7 +114,9 @@ namespace Otc.Messaging.RabbitMQ
                 throw new ObjectDisposedException(nameof(RabbitMQMessaging));
             }
 
-            var (channel, channelEvents) = CreateChannel();
+            var createChannelResult = CreateChannel();
+            var channel = createChannelResult.Channel;
+            var channelEvents = createChannelResult.ChannelEvents;
 
             var subscription = new RabbitMQSubscription(channel, channelEvents, handler,
                 configuration, this, loggerFactory, queues);
@@ -147,7 +151,7 @@ namespace Otc.Messaging.RabbitMQ
                 "{Topology} applied successfully!", name);
         }
 
-        private (IModel, RabbitMQChannelEventsHandler) CreateChannel()
+        private CreateChannelResult CreateChannel()
         {
             var channel = Connection.CreateModel();
 
@@ -161,7 +165,11 @@ namespace Otc.Messaging.RabbitMQ
                 $"{nameof(configuration.PerQueuePrefetchCount)} set to " +
                 $"{configuration.PerQueuePrefetchCount}");
 
-            return (channel, new RabbitMQChannelEventsHandler(channel, loggerFactory));
+            return new CreateChannelResult()
+            {
+                Channel = channel, 
+                ChannelEvents = new RabbitMQChannelEventsHandler(channel, loggerFactory)
+            };
         }
 
         internal void RemovePublisher(RabbitMQPublisher item)
@@ -221,6 +229,12 @@ namespace Otc.Messaging.RabbitMQ
             }
 
             disposed = true;
+        }
+
+        public class CreateChannelResult
+        {
+            public IModel Channel { get; set; }
+            public RabbitMQChannelEventsHandler ChannelEvents { get; set; }
         }
     }
 }

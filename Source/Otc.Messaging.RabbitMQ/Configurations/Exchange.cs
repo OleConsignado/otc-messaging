@@ -1,5 +1,4 @@
-﻿using Otc.ComponentModel.DataAnnotations;
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +6,6 @@ namespace Otc.Messaging.RabbitMQ.Configurations
 {
     public class Exchange
     {
-        [Required]
         public string Name { get; set; }
         public string Type { get; set; } = ExchangeType.Direct;
         public bool Durable { get; set; } = true;

@@ -22,8 +22,13 @@ namespace Otc.Messaging.RabbitMQ
             BasicDeliverEventArgs ea, string queue, CancellationToken cancellationToken)
         {
             Id = ea.BasicProperties.MessageId;
+#if NET451
+            Timestamp = Net451DateTimeOffset
+                .FromUnixTimeMilliseconds(ea.BasicProperties.Timestamp.UnixTime);
+#else
             Timestamp = DateTimeOffset
                 .FromUnixTimeMilliseconds(ea.BasicProperties.Timestamp.UnixTime);
+#endif
             Topic = ea.Exchange;
             Queue = queue;
             Redelivered = ea.Redelivered;

@@ -6,6 +6,7 @@ using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -220,7 +221,7 @@ namespace Otc.Messaging.RabbitMQ
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"{nameof(MessageHandling)}: Message " +
+                logger.LogError(456, ex, $"{nameof(MessageHandling)}: Message " +
                     "{MessageId} handle failed!", messageContext.Id);
 
                 var requeue = false;

@@ -1,5 +1,4 @@
-﻿using Otc.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Otc.Messaging.RabbitMQ.Configurations
 {
@@ -11,7 +10,6 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         /// <summary>
         /// List of exchanges in this topology
         /// </summary>
-        [Required]
         public IEnumerable<Exchange> Exchanges { get; set; }
     }
 }
