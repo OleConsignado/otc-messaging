@@ -5,7 +5,7 @@
     <Authors>Ole Consignado</Authors>
     <Copyright>Ole Consignado (c) 2020</Copyright>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <PackageProjectUrl>https://github.com/OleConsignado/otc-messaging/</PackageProjectUrl>  
+    <PackageProjectUrl>https://github.com/OleConsignado/otc-messaging/</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

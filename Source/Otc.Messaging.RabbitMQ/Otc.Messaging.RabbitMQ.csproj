@@ -5,7 +5,7 @@
     <Authors>Ole Consignado</Authors>
     <Copyright>Ole Consignado (c) 2020</Copyright>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <PackageProjectUrl>https://github.com/OleConsignado/otc-messaging/</PackageProjectUrl>      
+    <PackageProjectUrl>https://github.com/OleConsignado/otc-messaging/</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -24,7 +24,6 @@
     <PackageReference Include="RabbitMQ.Client" Version="6.0.0" />
     <PackageReference Include="Otc.ComponentModel.Annotations" Version="1.0.1" />
   </ItemGroup>
-
 
   <ItemGroup>
     <ProjectReference Include="..\Otc.Messaging.Abstractions\Otc.Messaging.Abstractions.csproj" />
