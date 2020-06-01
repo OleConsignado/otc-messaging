@@ -81,7 +81,7 @@ namespace Otc.Messaging.RabbitMQ.PredefinedTopologies
 
                 exchanges.Add(
                     BuildExchange(
-                        $"{baseName}-retry-{i}",
+                        $"{baseName}-retry-{i - 1}",
                         $"{baseName}-dead"));
             }
             else

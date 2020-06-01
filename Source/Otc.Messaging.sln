@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.Typed.Abstrac
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otc.Messaging.Subscriber.HW", "Otc.Messaging.Subscriber.HW\Otc.Messaging.Subscriber.HW.csproj", "{A954B24E-982E-460A-8BE5-A1B559A968AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otc.Messaging.RabbitMQ.PredefinedTopologies.Tests", "Otc.Messaging.RabbitMQ.PredefinedTopologies.Tests\Otc.Messaging.RabbitMQ.PredefinedTopologies.Tests.csproj", "{00BFE2F9-C469-4A4E-9B45-AF3BF28764EA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{A954B24E-982E-460A-8BE5-A1B559A968AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A954B24E-982E-460A-8BE5-A1B559A968AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A954B24E-982E-460A-8BE5-A1B559A968AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00BFE2F9-C469-4A4E-9B45-AF3BF28764EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00BFE2F9-C469-4A4E-9B45-AF3BF28764EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00BFE2F9-C469-4A4E-9B45-AF3BF28764EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00BFE2F9-C469-4A4E-9B45-AF3BF28764EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
