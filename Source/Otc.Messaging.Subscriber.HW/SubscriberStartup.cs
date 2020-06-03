@@ -42,7 +42,8 @@ namespace Otc.Messaging.Subscriber.HW
             
             // TODO: integrate execution time guard to Otc.Messaging
             hostedWorkerConfiguration.WorkerTimeoutInSeconds = 604800;  // 1 semana
-            
+
+            hostedWorkerConfiguration.MaxConsecutiveErrors = 0;
             hostedWorkerConfiguration.WorkOnStartup = true;
             services.AddHostedWorker<SubscriberHostedWorker<TMessage>>(hostedWorkerConfiguration);
             services.AddScoped<IMessageHandler<TMessage>, TMessageHandler>();
