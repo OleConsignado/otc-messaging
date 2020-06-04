@@ -45,7 +45,8 @@ namespace Otc.Messaging.Subscriber.HW
             
             try
             {
-                messageHandler.Handle(message, messageContext);
+                messageHandler.HandleAsync(message, messageContext)
+                    .GetAwaiter().GetResult();
             }
             catch(Exception e)
             {

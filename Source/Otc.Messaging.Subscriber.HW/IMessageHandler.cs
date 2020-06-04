@@ -1,9 +1,10 @@
 ﻿using Otc.Messaging.Abstractions;
+using System.Threading.Tasks;
 
 namespace Otc.Messaging.Subscriber.HW
 {
     public interface IMessageHandler<in TMessage>
     {
-        void Handle(TMessage message, IMessageContext messageContext);
+        Task HandleAsync(TMessage message, IMessageContext messageContext);
     }
 }
