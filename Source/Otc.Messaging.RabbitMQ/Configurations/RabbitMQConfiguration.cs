@@ -92,7 +92,7 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         /// Thrown if any error of configuration, connection or permissions occurs while
         /// applying given topology.
         /// </exception>
-        public void EnsureTopology(string name, IModel channel)
+        internal void EnsureTopology(string name, IModel channel)
         {
             try
             {
