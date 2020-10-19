@@ -259,6 +259,7 @@ namespace Otc.Messaging.RabbitMQ.Tests
         private readonly RabbitMQConfiguration configuration = new RabbitMQConfiguration
         {
             Hosts = new List<string> { "localhost" },
+            VirtualHost = "Tests",
             Port = 5672,
             User = "guest",
             Password = "guest",
