@@ -16,7 +16,7 @@ Run `otcrabbitmq -h` to get a list of global arguments needed to connect to your
 
 ### Creating a new virtual host named cli-tests.
 
-`./otcrabbitmq CreateVirtualHost -n cli-tests`
+`./otcrabbitmq CreateVirtualHost -v cli-tests`
 
 ### Creating a simple queue topology in a virtual host.
 
@@ -29,3 +29,9 @@ Run `otcrabbitmq -h` to get a list of global arguments needed to connect to your
 ### Creating a fanout queue topology with 2 queues and 2 retries each.
 
 `./otcrabbitmq CreateMultipleQueues -v cli-tests -t my-topic-with-2-queues-and-2-retries-each -q my-queue-1 my-queue-2 -r 10000 20000`
+
+### Applying mirror policy to all queues starting with 'my-queue'.
+
+`./otcrabbitmq ApplyMirrorPolicy -v cli-tests -n my-policy --pattern "^my-queue.*"`
+
+*Note:* All VirtualHosts are created with a default mirror policy that applies to all of its queues.

@@ -16,6 +16,7 @@ namespace Otc.Messaging.RabbitMQ.Cli
             cli.AddCommand(CreateSimpleQueue.Setup());
             cli.AddCommand(CreateMultipleQueues.Setup());
             cli.AddCommand(CreateVirtualHost.Setup());
+            cli.AddCommand(ApplyMirrorPolicy.Setup());
 
             // Parse command line arguments
             var parsed = cli.Parse(args);
