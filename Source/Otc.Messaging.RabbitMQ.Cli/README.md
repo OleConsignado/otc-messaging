@@ -1,8 +1,8 @@
 # Otc.Messaging.RabbitMQ.Cli
 
-This is a simple commandline utility allowing to apply predefined topologies found in [Otc.Messaging.RabbitMQ.PredefinedTopologies](https://github.com/OleConsignado/otc-messaging/tree/master/Source/Otc.Messaging.RabbitMQ.PredefinedTopologies).
+This is a simple commandline utility allowing to apply predefined topologies found in [Otc.Messaging.RabbitMQ.PredefinedTopologies](../Otc.Messaging.RabbitMQ.PredefinedTopologies).
 
-It may grow to acomodate more commands as need appears, check [this link](https://github.com/OleConsignado/otc-messaging/tree/master/Source/Otc.Messaging.RabbitMQ.Cli/Commands) to get a list of available commands.
+It may grow to acomodate more commands as need appears, check [here](./Commands) to get a list of available commands.
 
 ## Compiling
 
