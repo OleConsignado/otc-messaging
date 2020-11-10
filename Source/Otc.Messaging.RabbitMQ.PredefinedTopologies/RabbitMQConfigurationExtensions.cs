@@ -32,7 +32,7 @@ namespace Otc.Messaging.RabbitMQ.PredefinedTopologies
 
             var topologyFactory = new TTopologyFactory();
 
-            if(rabbitMQconfiguration.Topologies is null)
+            if (rabbitMQconfiguration.Topologies is null)
             {
                 rabbitMQconfiguration.Topologies = new Dictionary<string, Topology>();
             }

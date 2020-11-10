@@ -30,6 +30,11 @@ namespace Otc.Messaging.RabbitMQ.Configurations
         public int Port { set; get; } = AmqpTcpEndpoint.UseDefaultPort;
 
         /// <summary>
+        /// Virtual host to connect to.
+        /// </summary>
+        public string VirtualHost { set; get; } = ConnectionFactory.DefaultVHost;
+
+        /// <summary>
         /// User for connection.
         /// </summary>
         [Required]

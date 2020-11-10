@@ -42,6 +42,7 @@ namespace Otc.Messaging.RabbitMQ
                     var factory = new ConnectionFactory()
                     {
                         Port = configuration.Port,
+                        VirtualHost = configuration.VirtualHost,
                         UserName = configuration.User,
                         Password = configuration.Password,
                         ClientProvidedName = configuration.ClientProvidedName,
