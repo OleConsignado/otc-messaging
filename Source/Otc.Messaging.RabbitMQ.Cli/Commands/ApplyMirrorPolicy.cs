@@ -28,12 +28,12 @@ namespace Otc.Messaging.RabbitMQ.Cli.Commands
             option.Description = "Pattern matching queues names.";
             cmd.AddOption(option);
 
-            cmd.Handler = CommandHandler.Create<string, string>(Execute);
+            cmd.Handler = CommandHandler.Create<string, string>(ExecuteAsync);
 
             return cmd;
         }
 
-        public static async Task Execute(string name, string pattern)
+        public static async Task ExecuteAsync(string name, string pattern)
         {
             try
             {
@@ -52,8 +52,8 @@ namespace Otc.Messaging.RabbitMQ.Cli.Commands
                 var provider = ServiceProvider.GetInstance();
                 var api = provider.GetService<IRabbitMQApi>();
 
-                var body = await PrepareBody(api, pattern);
-                var response = await api.PutPolicy(Broker.VirtualHost, name, body);
+                var body = await PrepareBodyAsync(api, pattern);
+                var response = await api.PutPolicyAsync(Broker.VirtualHost, name, body);
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
@@ -74,16 +74,16 @@ namespace Otc.Messaging.RabbitMQ.Cli.Commands
             }
         }
 
-        private static async Task<string> PrepareBody(IRabbitMQApi api, string pattern)
+        private static async Task<string> PrepareBodyAsync(IRabbitMQApi api, string pattern)
         {
-            var nodes = await FetchNumberOfNodes(api);
+            var nodes = await FetchNumberOfNodesAsync(api);
             var mirrors = CalculateNumberOfMirrors(nodes);
             return BuildPayload(mirrors, pattern);
         }
 
-        private static async Task<int> FetchNumberOfNodes(IRabbitMQApi api)
+        private static async Task<int> FetchNumberOfNodesAsync(IRabbitMQApi api)
         {
-            var response = await api.GetOverview();
+            var response = await api.GetOverviewAsync();
             if (!response.IsSuccessStatusCode)
             {
                 throw new CliException(DefaultErrorMessage +

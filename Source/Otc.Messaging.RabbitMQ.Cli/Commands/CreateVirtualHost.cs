@@ -16,12 +16,12 @@ namespace Otc.Messaging.RabbitMQ.Cli.Commands
         {
             var cmd = new Command(nameof(CreateVirtualHost));
 
-            cmd.Handler = CommandHandler.Create(Execute);
+            cmd.Handler = CommandHandler.Create(ExecuteAsync);
 
             return cmd;
         }
 
-        public static async Task Execute()
+        public static async Task ExecuteAsync()
         {
             try
             {
@@ -31,7 +31,7 @@ namespace Otc.Messaging.RabbitMQ.Cli.Commands
                 var provider = ServiceProvider.GetInstance();
                 var api = provider.GetService<IRabbitMQApi>();
 
-                var response = await api.GetVHost(name);
+                var response = await api.GetVHostAsync(name);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     throw new CliException(
@@ -44,7 +44,7 @@ namespace Otc.Messaging.RabbitMQ.Cli.Commands
                         $"{response.StatusCode} - {response.ReasonPhrase}.");
                 }
 
-                response = await api.PutVHost(name);
+                response = await api.PutVHostAsync(name);
                 if (response.StatusCode != HttpStatusCode.Created)
                 {
                     throw new CliException(DefaultErrorMessage +
@@ -54,7 +54,7 @@ namespace Otc.Messaging.RabbitMQ.Cli.Commands
                 Console.WriteLine($"VirtualHost {name} created successfully!");
 
                 Console.WriteLine($"Applying default mirror policy");
-                await ApplyMirrorPolicy.Execute("default-mirror-policy", ".*");
+                await ApplyMirrorPolicy.ExecuteAsync("default-mirror-policy", ".*");
             }
             catch (Exception e)
             {
