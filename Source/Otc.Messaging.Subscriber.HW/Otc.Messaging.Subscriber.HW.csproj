@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <Authors>Ole Consignado</Authors>
     <Copyright>Ole Consignado (c) 2020</Copyright>
     <VersionPrefix>1.0.0</VersionPrefix>
     <PackageProjectUrl>https://github.com/OleConsignado/otc-messaging/</PackageProjectUrl>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -19,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Otc.AspNetCore.ApiBoot" Version="3.2.0" />
+    <PackageReference Include="Otc.AspNetCore.ApiBoot" Version="4.0.0" />
     <PackageReference Include="Otc.HostedWorker" Version="1.2.0" />
   </ItemGroup>
 
