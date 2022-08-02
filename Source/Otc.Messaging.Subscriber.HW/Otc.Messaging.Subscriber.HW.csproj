@@ -3,10 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Authors>Ole Consignado</Authors>
-    <Copyright>Ole Consignado (c) 2020</Copyright>
+    <Copyright>Ole Consignado (c) 2022</Copyright>
     <VersionPrefix>1.0.0</VersionPrefix>
     <PackageProjectUrl>https://github.com/OleConsignado/otc-messaging/</PackageProjectUrl>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
+    <Description>Otc.Messaging.Subscriber.HW: fornece recursos para criação de um subscriber de uma fila.</Description>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
